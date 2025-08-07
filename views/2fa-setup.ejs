@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><title>Configurar 2FA</title></head>
+<body>
+  <h1>Configura la autenticación de dos factores (2FA)</h1>
+  <% if (error_msg) { %><p style="color:red;"><%= error_msg %></p><% } %>
+  <% if (success_msg) { %><p style="color:green;"><%= success_msg %></p><% } %>
+  <p>Escanea este código QR con Google Authenticator o similar:</p>
+  <img src="<%= qrCodeDataURL %>" alt="QR Code"><br>
+  <p>O usa esta clave secreta: <%= secret %></p>
+
+  <form action="/2fa/setup" method="POST">
+    <input type="text" name="token" placeholder="Ingresa código OTP" required><br>
+    <button type="submit">Activar 2FA</button>
+  </form>
+  <p><a href="/dashboard">Volver al dashboard</a></p>
+</body>
+</html>

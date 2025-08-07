@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html>
+<head><title>Dashboard</title></head>
+<body>
+  <h1>Bienvenido, <%= user.name %>!</h1>
+  <p>Correo: <%= user.email %></p>
+  <p>2FA activado: <%= user.twoFactorEnabled ? 'Sí' : 'No' %></p>
+  <p><a href="/2fa/setup">Configurar 2FA</a></p>
+  <p><a href="/logout

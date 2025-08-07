@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><title>Login</title></head>
+<body>
+  <h1>Iniciar sesión</h1>
+  <% if (error_msg) { %><p style="color:red;"><%= error_msg %></p><% } %>
+  <% if (success_msg) { %><p style="color:green;"><%= success_msg %></p><% } %>
+  <form action="/login" method="POST">
+    <input type="email" name="email" placeholder="Correo" required><br>
+    <input type="password" name="password" placeholder="Contraseña" required><br>
+    <button type="submit">Entrar</button>
+  </form>
+  <p>¿No tienes cuenta? <a href="/register">Regístrate</a></p>
+</body>
+</html>

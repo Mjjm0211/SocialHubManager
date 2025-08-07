@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><title>Registro</title></head>
+<body>
+  <h1>Registrarse</h1>
+  <% if (errors && errors.length > 0) { %>
+    <ul>
+      <% errors.forEach(e => { %><li style="color:red;"><%= e.msg %></li><% }) %>
+    </ul>
+  <% } %>
+  <% if (success_msg) { %>
+    <p style="color:green;"><%= success_msg %></p>
+  <% } %>
+  <form action="/register" method="POST">
+    <input type="text" name="name" placeholder="Nombre" value="<%= typeof name !== 'undefined' ? name : '' %>" required><br>
+    <input type="email" name="email" placeholder="Correo" value="<%= typeof email !== 'undefined' ? email : '' %>" required><br>
+    <input type="password" name="password" placeholder="Contraseña" required><br>
+    <input type="password" name="password2" placeholder="Confirmar Contraseña" required><br>
+    <button type="submit">Registrar</button>
+  </form>
+  <p>¿Ya tienes cuenta? <a href="/login">Inicia sesión</a></p>
+</body>
+</html>
