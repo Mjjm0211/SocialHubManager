@@ -1,70 +1,105 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const User = require('../models/User');
+const bcrypt = require('bcryptjs');
+const User = require('../models/User'); // Asegúrate que tu modelo User está definido con Sequelize
 const { ensureAuthenticated } = require('../middleware/auth');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
+const { Sequelize } = require('sequelize');
 
-// Registro
+// Registro (GET)
 router.get('/register', (req, res) => {
-  res.render('register', { errors: [] });  // <-- PASA errors vacío para que no falle la vista
+  res.render('register', { errors: [] });
 });
 
-
+// Registro (POST)
 router.post('/register', async (req, res) => {
   const { name, email, password, password2 } = req.body;
-  let errors = [];
+  const errors = [];
 
-  if (!name || !email || !password || !password2) errors.push({ msg: 'Por favor rellena todos los campos' });
-  if (password !== password2) errors.push({ msg: 'Las contraseñas no coinciden' });
-  if (password.length < 6) errors.push({ msg: 'La contraseña debe tener al menos 6 caracteres' });
+  // Validaciones
+  if (!name || !email || !password || !password2) {
+    errors.push({ msg: 'Todos los campos son obligatorios' });
+  }
+  if (password !== password2) {
+    errors.push({ msg: 'Las contraseñas no coinciden' });
+  }
+  if (password.length < 6) {
+    errors.push({ msg: 'La contraseña debe tener al menos 6 caracteres' });
+  }
 
   if (errors.length > 0) {
     return res.render('register', { errors, name, email, password, password2 });
   }
 
   try {
-    let user = await User.findOne({ email: email.toLowerCase() });
-    if (user) {
-      errors.push({ msg: 'Correo ya registrado' });
+    // Verificar si el usuario ya existe
+    const existingUser = await User.findOne({ where: { email: email.toLowerCase() } });
+    if (existingUser) {
+      errors.push({ msg: 'El correo ya está registrado' });
       return res.render('register', { errors, name, email, password, password2 });
     }
 
-    user = new User({ name, email: email.toLowerCase(), password });
-    await user.save();
-    req.flash('success_msg', 'Registrado correctamente. Ahora inicia sesión.');
+    // Hash de la contraseña
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Crear usuario en PostgreSQL
+    await User.create({ 
+      name, 
+      email: email.toLowerCase(), 
+      password: hashedPassword,
+      twoFactorEnabled: false,
+      otpSecret: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    req.flash('success_msg', 'Registro exitoso. Inicia sesión.');
     res.redirect('/login');
   } catch (err) {
-    console.error(err);
-    res.render('register', { errors: [{ msg: 'Error en el servidor' }], name, email, password, password2 });
+    console.error('Error en registro:', err);
+    res.render('register', { 
+      errors: [{ msg: 'Error del servidor' }], 
+      name, 
+      email, 
+      password, 
+      password2 
+    });
   }
 });
 
-// Login
+// Login (GET)
 router.get('/login', (req, res) => {
-  res.render('login');
+  res.render('login', { error_msg: req.flash('error_msg') });
 });
 
+// Login (POST)
 router.post('/login', (req, res, next) => {
-  passport.authenticate('local', async (err, user, info) => {
-    if (err) return next(err);
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {
+      console.error('Error en autenticación:', err);
+      return next(err);
+    }
     if (!user) {
-      req.flash('error_msg', info.message);
+      req.flash('error_msg', info.message || 'Error de autenticación');
       return res.redirect('/login');
     }
-
-    req.logIn(user, async (err) => {
-      if (err) return next(err);
-
-      if (user.twoFactorEnabled) {
-        req.session.pending_2fa_user = user._id;
-        req.logout(() => {
-          res.redirect('/2fa/verify');
-        });
-      } else {
-        res.redirect('/dashboard');
+    
+    req.logIn(user, (err) => {
+      if (err) {
+        console.error('Error en login:', err);
+        return next(err);
       }
+      
+      // Verificar 2FA si está habilitado
+      if (user.twoFactorEnabled) {
+        req.session.pending_2fa_user = user.id;
+        return res.redirect('/2fa/verify');
+      }
+      
+      return res.redirect('/dashboard');
     });
   })(req, res, next);
 });
@@ -72,80 +107,134 @@ router.post('/login', (req, res, next) => {
 // Logout
 router.get('/logout', (req, res) => {
   req.logout(() => {
-    req.flash('success_msg', 'Sesión cerrada');
+    req.flash('success_msg', 'Sesión cerrada.');
     res.redirect('/login');
   });
 });
 
-// Dashboard protegido
-router.get('/dashboard', ensureAuthenticated, (req, res) => {
-  res.render('dashboard', { user: req.user });
-});
-
-// 2FA Setup
-router.get('/2fa/setup', ensureAuthenticated, async (req, res) => {
-  const secret = speakeasy.generateSecret({ name: `SocialHubManager (${req.user.email})` });
-  const qrCodeDataURL = await qrcode.toDataURL(secret.otpauth_url);
-  req.session.temp_secret = secret;
-  res.render('2fa-setup', { qrCodeDataURL, secret: secret.base32 });
-});
-
-router.post('/2fa/setup', ensureAuthenticated, async (req, res) => {
-  const userToken = req.body.token;
-  const secret = req.session.temp_secret;
-
-  const verified = speakeasy.totp.verify({
-    secret: secret.base32,
-    encoding: 'base32',
-    token: userToken
-  });
-
-  if (verified) {
-    await User.findByIdAndUpdate(req.user._id, { twoFactorEnabled: true, otpSecret: secret.base32 });
-    delete req.session.temp_secret;
-    req.flash('success_msg', '2FA activado correctamente.');
-    res.redirect('/dashboard');
-  } else {
-    req.flash('error_msg', 'Código OTP incorrecto, inténtalo de nuevo.');
-    res.redirect('/2fa/setup');
+// Dashboard (protegido)
+router.get('/dashboard', ensureAuthenticated, async (req, res) => {
+  try {
+    // Obtener el usuario con sus cuentas sociales
+    const user = await User.findByPk(req.user.id, {
+      include: ['socialAccounts'] // Asegúrate de tener esta relación definida
+    });
+    
+    // Si no hay cuentas sociales, inicializar como array vacío
+    if (!user.socialAccounts) {
+      user.socialAccounts = [];
+    }
+    
+    res.render('dashboard', { user });
+  } catch (err) {
+    console.error('Error al cargar dashboard:', err);
+    res.redirect('/login');
   }
 });
 
-// 2FA Verify
-router.get('/2fa/verify', (req, res) => {
-  if (!req.session.pending_2fa_user) return res.redirect('/login');
-  res.render('2fa-verify');
+// 2FA Setup (GET)
+router.get('/2fa/setup', ensureAuthenticated, async (req, res) => {
+  try {
+    const secret = speakeasy.generateSecret({ 
+      name: `SocialHub:${req.user.email}`,
+      length: 20
+    });
+    const qrCodeDataURL = await qrcode.toDataURL(secret.otpauth_url);
+    req.session.temp_secret = secret.base32;
+    res.render('2fa-setup', { 
+      qrCodeDataURL, 
+      secret: secret.base32 
+    });
+  } catch (err) {
+    console.error('Error en 2FA setup:', err);
+    res.redirect('/dashboard');
+  }
 });
 
+// 2FA Setup (POST)
+router.post('/2fa/setup', ensureAuthenticated, async (req, res) => {
+  const { token } = req.body;
+  const secret = req.session.temp_secret;
+
+  try {
+    const verified = speakeasy.totp.verify({
+      secret,
+      encoding: 'base32',
+      token,
+      window: 2
+    });
+
+    if (verified) {
+      await User.update(
+        { 
+          twoFactorEnabled: true, 
+          otpSecret: secret,
+          updatedAt: new Date()
+        },
+        { 
+          where: { id: req.user.id } 
+        }
+      );
+      delete req.session.temp_secret;
+      req.flash('success_msg', '2FA activado correctamente.');
+      res.redirect('/dashboard');
+    } else {
+      req.flash('error_msg', 'Código OTP inválido.');
+      res.redirect('/2fa/setup');
+    }
+  } catch (err) {
+    console.error('Error en 2FA setup:', err);
+    res.redirect('/dashboard');
+  }
+});
+
+// 2FA Verify (GET)
+router.get('/2fa/verify', (req, res) => {
+  if (!req.session.pending_2fa_user) {
+    return res.redirect('/login');
+  }
+  res.render('2fa-verify', { error_msg: req.flash('error_msg') });
+});
+
+// 2FA Verify (POST)
 router.post('/2fa/verify', async (req, res) => {
   const { token } = req.body;
+  const userId = req.session.pending_2fa_user;
 
-  if (!req.session.pending_2fa_user) return res.redirect('/login');
-
-  const user = await User.findById(req.session.pending_2fa_user);
-  if (!user) {
-    req.flash('error_msg', 'Usuario no encontrado');
+  if (!userId) {
     return res.redirect('/login');
   }
 
-  const isVerified = speakeasy.totp.verify({
-    secret: user.otpSecret,
-    encoding: 'base32',
-    token
-  });
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      req.flash('error_msg', 'Usuario no encontrado.');
+      return res.redirect('/login');
+    }
 
-  if (isVerified) {
-    req.logIn(user, (err) => {
-      if (err) {
-        req.flash('error_msg', 'Error al autenticar con OTP');
-        return res.redirect('/login');
-      }
-      delete req.session.pending_2fa_user;
-      res.redirect('/dashboard');
+    const verified = speakeasy.totp.verify({
+      secret: user.otpSecret,
+      encoding: 'base32',
+      token,
+      window: 2
     });
-  } else {
-    req.flash('error_msg', 'Código OTP incorrecto');
-    res.redirect('/2fa/verify');
+
+    if (verified) {
+      req.logIn(user, (err) => {
+        if (err) {
+          req.flash('error_msg', 'Error al autenticar.');
+          return res.redirect('/login');
+        }
+        delete req.session.pending_2fa_user;
+        res.redirect('/dashboard');
+      });
+    } else {
+      req.flash('error_msg', 'Código OTP incorrecto.');
+      res.redirect('/2fa/verify');
+    }
+  } catch (err) {
+    console.error('Error en 2FA verify:', err);
+    res.redirect('/login');
   }
 });
 
