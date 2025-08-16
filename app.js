@@ -5,6 +5,9 @@ const flash = require('connect-flash');
 const { Sequelize } = require('sequelize');
 const { configureLocalStrategy, passport } = require('./config/passport');
 const authRoutes = require('./routes/auth');
+const socialAuthRoutes = require('./routes/socialAuth');
+const livereload = require("livereload");
+const connectLivereload = require("connect-livereload");
 
 const app = express();
 
@@ -16,13 +19,8 @@ const sequelize = new Sequelize(
   {
     host: process.env.DB_HOST,
     dialect: 'postgres',
-    logging: false, // Para evitar logs excesivos en consola
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000
-    }
+    logging: false,
+    pool: { max: 5, min: 0, acquire: 30000, idle: 10000 }
   }
 );
 
@@ -33,10 +31,13 @@ sequelize.authenticate()
 
 // Middlewares
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+// Sesión y flash
 app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: true,
-  saveUninitialized: true,
+  secret: process.env.SESSION_SECRET || 'secret123',
+  resave: false,
+  saveUninitialized: false,
 }));
 app.use(flash());
 
@@ -52,26 +53,36 @@ app.set('view engine', 'ejs');
 app.use((req, res, next) => {
   res.locals.success_msg = req.flash('success_msg');
   res.locals.error_msg = req.flash('error_msg');
+  res.locals.user = req.user || null;
   next();
 });
 
-// Ruta raíz redirige al login
-app.get('/', (req, res) => {
-  res.redirect('/login');
-});
-
-// Rutas de autenticación
+// Rutas
+app.get('/', (req, res) => res.redirect('/login'));
 app.use('/', authRoutes);
+app.use('/auth', socialAuthRoutes);
 
 // Sincronizar modelos con la base de datos
 sequelize.sync()
   .then(() => console.log('Modelos sincronizados con PostgreSQL'))
   .catch(err => console.error('Error al sincronizar modelos:', err));
 
-// Puerto y servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en: http://localhost:${PORT}`);
+// LiveReload (opcional)
+const liveReloadServer = livereload.createServer();
+liveReloadServer.watch(__dirname + "/views");
+app.use(connectLivereload());
+liveReloadServer.server.once("connection", () => {
+  setTimeout(() => liveReloadServer.refresh("/"), 100);
 });
 
-module.exports = { sequelize }; // Exportamos sequelize para usarlo en otros archivos
+// Puerto y servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor corriendo en: http://localhost:${PORT}`));
+
+//google
+const googleAuthRoutes = require('./routes/googleAuth');
+app.use('/auth', googleAuthRoutes);
+
+
+
+module.exports = { sequelize };

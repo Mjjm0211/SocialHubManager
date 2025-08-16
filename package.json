@@ -28,6 +28,8 @@
     "mysql2": "^3.14.3",
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-linkedin-oauth2": "^2.0.0",
     "passport-local": "^1.0.0",
     "passport-twitter": "^1.0.4",
     "pg": "^8.16.3",
@@ -37,6 +39,8 @@
     "speakeasy": "^2.0.0"
   },
   "devDependencies": {
+    "connect-livereload": "^0.6.1",
+    "livereload": "^0.10.3",
     "sequelize-cli": "^6.6.3"
   }
 }

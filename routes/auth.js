@@ -104,27 +104,38 @@ router.post('/login', (req, res, next) => {
   })(req, res, next);
 });
 
+
+
 // Logout
-router.get('/logout', (req, res) => {
-  req.logout(() => {
-    req.flash('success_msg', 'Sesión cerrada.');
-    res.redirect('/login');
+router.post('/logout', (req, res) => {
+  // Destruye la sesión del usuario
+  req.session.destroy(err => {
+    if (err) {
+      console.error('Error al cerrar sesión:', err);
+      return res.redirect('/dashboard'); // Si hay error, vuelve al dashboard
+    }
+    res.clearCookie('connect.sid'); // Limpiar la cookie de sesión
+    res.redirect('/login'); // Redirige al login
   });
 });
 
-// Dashboard (protegido)
+
+
+// Dashboard 
 router.get('/dashboard', ensureAuthenticated, async (req, res) => {
   try {
     // Obtener el usuario con sus cuentas sociales
-    const user = await User.findByPk(req.user.id, {
-      include: ['socialAccounts'] // Asegúrate de tener esta relación definida
-    });
+    //const user = await User.findByPk(req.user.id, {
+    //  include: ['socialAccounts'] 
+    //});
     
     // Si no hay cuentas sociales, inicializar como array vacío
-    if (!user.socialAccounts) {
-      user.socialAccounts = [];
-    }
-    
+    //if (!user.socialAccounts) {
+    //  user.socialAccounts = [];
+    //}
+    const user = await User.findByPk(req.user.id);
+
+
     res.render('dashboard', { user });
   } catch (err) {
     console.error('Error al cargar dashboard:', err);
