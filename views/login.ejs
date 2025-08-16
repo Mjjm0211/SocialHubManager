@@ -1,15 +1,39 @@
 <!DOCTYPE html>
-<html>
-<head><title>Login</title></head>
-<body>
-  <h1>Iniciar sesión</h1>
-  <% if (error_msg) { %><p style="color:red;"><%= error_msg %></p><% } %>
-  <% if (success_msg) { %><p style="color:green;"><%= success_msg %></p><% } %>
-  <form action="/login" method="POST">
-    <input type="email" name="email" placeholder="Correo" required><br>
-    <input type="password" name="password" placeholder="Contraseña" required><br>
-    <button type="submit">Entrar</button>
-  </form>
-  <p>¿No tienes cuenta? <a href="/register">Regístrate</a></p>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gray-100">
+  <div class="w-full max-w-sm bg-white rounded-2xl shadow-lg p-8">
+    <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Iniciar sesión</h1>
+
+    <% if (error_msg) { %>
+      <p class="text-red-500 text-sm mb-4"><%= error_msg %></p>
+    <% } %>
+    <% if (success_msg) { %>
+      <p class="text-green-500 text-sm mb-4"><%= success_msg %></p>
+    <% } %>
+
+    <form action="/login" method="POST" class="space-y-4">
+      <input type="email" name="email" placeholder="Correo"
+        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" required>
+
+      <input type="password" name="password" placeholder="Contraseña"
+        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" required>
+
+      <button type="submit"
+        class="w-full bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 rounded-lg transition-colors">
+        Entrar
+      </button>
+    </form>
+
+    <p class="text-sm text-center text-gray-600 mt-4">
+      ¿No tienes cuenta?
+      <a href="/register" class="text-sky-600 hover:underline font-medium">Regístrate</a>
+    </p>
+  </div>
 </body>
 </html>

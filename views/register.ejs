@@ -1,23 +1,53 @@
 <!DOCTYPE html>
-<html>
-<head><title>Registro</title></head>
-<body>
-  <h1>Registrarse</h1>
-  <% if (errors && errors.length > 0) { %>
-    <ul>
-      <% errors.forEach(e => { %><li style="color:red;"><%= e.msg %></li><% }) %>
-    </ul>
-  <% } %>
-  <% if (success_msg) { %>
-    <p style="color:green;"><%= success_msg %></p>
-  <% } %>
-  <form action="/register" method="POST">
-    <input type="text" name="name" placeholder="Nombre" value="<%= typeof name !== 'undefined' ? name : '' %>" required><br>
-    <input type="email" name="email" placeholder="Correo" value="<%= typeof email !== 'undefined' ? email : '' %>" required><br>
-    <input type="password" name="password" placeholder="Contraseña" required><br>
-    <input type="password" name="password2" placeholder="Confirmar Contraseña" required><br>
-    <button type="submit">Registrar</button>
-  </form>
-  <p>¿Ya tienes cuenta? <a href="/login">Inicia sesión</a></p>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gray-100">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+    <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Registrarse</h1>
+
+    <% if (errors && errors.length > 0) { %>
+      <ul class="mb-4 space-y-1">
+        <% errors.forEach(e => { %>
+          <li class="text-red-500 text-sm"><%= e.msg %></li>
+        <% }) %>
+      </ul>
+    <% } %>
+
+    <% if (success_msg) { %>
+      <p class="text-green-500 text-sm mb-4"><%= success_msg %></p>
+    <% } %>
+
+    <form action="/register" method="POST" class="space-y-4">
+      <input type="text" name="name" placeholder="Nombre"
+        value="<%= typeof name !== 'undefined' ? name : '' %>"
+        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-sky-400 focus:outline-none" required>
+
+      <input type="email" name="email" placeholder="Correo"
+        value="<%= typeof email !== 'undefined' ? email : '' %>"
+        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-sky-400 focus:outline-none" required>
+
+      <input type="password" name="password" placeholder="Contraseña"
+        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-sky-400 focus:outline-none" required>
+
+      <input type="password" name="password_confirmation" placeholder="Confirmar Contraseña"
+        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-sky-400 focus:outline-none" required>
+
+      <button type="submit"
+        class="w-full bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 rounded-lg transition-colors">
+        Registrar
+      </button>
+    </form>
+
+    <p class="text-sm text-center text-gray-600 mt-4">
+      ¿Ya tienes cuenta?
+      <a href="/login" class="text-sky-600 hover:underline font-medium">Inicia sesión</a>
+
+    </p>
+  </div>
 </body>
 </html>
