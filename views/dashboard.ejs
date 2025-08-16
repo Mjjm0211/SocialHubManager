@@ -1,11 +1,79 @@
-<h1>Dashboard</h1>
-<% if (user.socialAccounts && user.socialAccounts.length > 0) { %>
-  <h2>Redes conectadas:</h2>
-  <ul>
-    <% user.socialAccounts.forEach(account => { %>
-      <li><%= account.provider %></li>
-    <% }) %>
-  </ul>
-<% } else { %>
-  <p>No hay redes sociales conectadas.</p>
-<% } %>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="h-full bg-gray-900">
+
+<div class="min-h-full">
+  <!-- Navbar -->
+  <nav class="bg-gray-800/50">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex h-16 items-center justify-between">
+        <div class="flex items-center">
+          
+          <div class="hidden md:block ml-10 flex items-baseline space-x-4">
+            <a href="#" class="rounded-md bg-gray-950/50 px-3 py-2 text-sm font-medium text-white">Dashboard</a>
+            
+          </div>
+        </div>
+
+        <!-- Avatar dropdown -->
+        <div class="relative ml-4">
+          <button id="avatarBtn" class="flex items-center rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <img src="<%= user.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' %>" 
+                 alt="Avatar" class="h-8 w-8 rounded-full">
+          </button>
+
+          <!-- Dropdown menu -->
+          <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1">
+            <form action="#" method="POST">
+              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-white-500 hover:bg-gray-700">Editar Perfil</button>
+            </form>
+            <form action="/logout" method="POST">
+              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-700">Cerrar sesión</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="bg-gray-800">
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <h1 class="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main>
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <h2 class="text-xl font-semibold text-white mb-2">Bienvenido, <%= user.name %></h2>
+      <p class="text-gray-300">Email: <%= user.email %></p>
+    </div>
+  </main>
+</div>
+
+<script>
+  const avatarBtn = document.getElementById('avatarBtn');
+  const dropdownMenu = document.getElementById('dropdownMenu');
+
+  avatarBtn.addEventListener('click', () => {
+    dropdownMenu.classList.toggle('hidden');
+  });
+
+  // Cerrar el dropdown al hacer clic fuera
+  window.addEventListener('click', (e) => {
+    if (!avatarBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+      dropdownMenu.classList.add('hidden');
+    }
+  });
+</script>
+
+</body>
+</html>
