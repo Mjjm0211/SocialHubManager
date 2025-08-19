@@ -7,6 +7,7 @@ const { ensureAuthenticated } = require('../middleware/auth');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
 const { Sequelize } = require('sequelize');
+const SocialAccount = require('../models/SocialAccount');
 
 // Registro (GET)
 router.get('/register', (req, res) => {
@@ -119,24 +120,39 @@ router.post('/logout', (req, res) => {
   });
 });
 
-
-
 // Dashboard 
 router.get('/dashboard', ensureAuthenticated, async (req, res) => {
   try {
-    // Obtener el usuario con sus cuentas sociales
-    //const user = await User.findByPk(req.user.id, {
-    //  include: ['socialAccounts'] 
-    //});
-    
-    // Si no hay cuentas sociales, inicializar como array vacío
-    //if (!user.socialAccounts) {
-    //  user.socialAccounts = [];
-    //}
-    const user = await User.findByPk(req.user.id);
+    const user = await User.findByPk(req.user.id, {
+      include: [
+        {
+          model: SocialAccount,
+          as: 'socialAccounts',
+        }
+      ]
+    });
 
+    // Definir proveedores de ejemplo
+    const providers = [
+      { id: 'facebook', name: 'Facebook', color: 'blue', icon: 'fab fa-facebook' },
+      { id: 'twitter', name: 'Twitter', color: 'sky', icon: 'fab fa-twitter' },
+      { id: 'instagram', name: 'Instagram', color: 'pink', icon: 'fab fa-instagram' },
+      { id: 'linkedin', name: 'LinkedIn', color: 'blue', icon: 'fab fa-linkedin' },
+    ];
 
-    res.render('dashboard', { user });
+    // Construir configs a partir de la base de datos
+    const configs = {};
+    user.socialAccounts.forEach(account => {
+      configs[account.provider] = {
+        providerId: account.providerId,
+        token: account.token,
+        refreshToken: account.refreshToken,
+        displayName: account.displayName,
+        isVerified: true // opcional, si quieres agregar verificación de token
+      };
+    });
+
+    res.render('dashboard', { user, providers, configs });
   } catch (err) {
     console.error('Error al cargar dashboard:', err);
     res.redirect('/login');
