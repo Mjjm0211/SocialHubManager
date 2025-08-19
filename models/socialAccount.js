@@ -3,7 +3,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const User = require('./User');
 
-const SocialAccount = sequelize.define('socialAccount', {
+const SocialAccount = sequelize.define('SocialAccount', {
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -18,6 +18,8 @@ const SocialAccount = sequelize.define('socialAccount', {
   },
   token: DataTypes.STRING,
   refreshToken: DataTypes.STRING,
+  displayName: DataTypes.STRING, 
+
 }, {
   timestamps: true,
 });
