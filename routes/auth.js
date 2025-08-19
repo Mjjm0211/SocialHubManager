@@ -15,14 +15,14 @@ router.get('/register', (req, res) => {
 
 // Registro (POST)
 router.post('/register', async (req, res) => {
-  const { name, email, password, password2 } = req.body;
+  const { name, email, password, password_confirmation } = req.body;
   const errors = [];
 
   // Validaciones
-  if (!name || !email || !password || !password2) {
+  if (!name || !email || !password || !password_confirmation) {
     errors.push({ msg: 'Todos los campos son obligatorios' });
   }
-  if (password !== password2) {
+  if (password != password_confirmation) {
     errors.push({ msg: 'Las contraseñas no coinciden' });
   }
   if (password.length < 6) {
@@ -30,7 +30,7 @@ router.post('/register', async (req, res) => {
   }
 
   if (errors.length > 0) {
-    return res.render('register', { errors, name, email, password, password2 });
+    return res.render('register', { errors, name, email, password, password_confirmation });
   }
 
   try {
@@ -38,7 +38,7 @@ router.post('/register', async (req, res) => {
     const existingUser = await User.findOne({ where: { email: email.toLowerCase() } });
     if (existingUser) {
       errors.push({ msg: 'El correo ya está registrado' });
-      return res.render('register', { errors, name, email, password, password2 });
+      return res.render('register', { errors, name, email, password, password_confirmation });
     }
 
     // Hash de la contraseña
@@ -65,7 +65,7 @@ router.post('/register', async (req, res) => {
       name, 
       email, 
       password, 
-      password2 
+      password_confirmation 
     });
   }
 });
