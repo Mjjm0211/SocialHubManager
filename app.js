@@ -8,6 +8,8 @@ const authRoutes = require('./routes/auth');
 const socialAuthRoutes = require('./routes/socialAuth');
 const livereload = require("livereload");
 const connectLivereload = require("connect-livereload");
+const oauthRoutes = require('./routes/oauth');
+const socialAccountController = require('./controllers/socialAccountController');
 
 const app = express();
 
@@ -45,6 +47,15 @@ app.use(flash());
 configureLocalStrategy();
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Configurar rutas OAuth
+app.use('/oauth', oauthRoutes);
+// Rutas adicionales para configuración social
+app.get('/social/config', socialAccountController.showApiConfig);
+app.post('/social/config', socialAccountController.saveApiConfig);
+app.post('/social/config/:provider/verify', socialAccountController.verifyCredentials);
+app.delete('/social/config/:provider', socialAccountController.deleteConfig);
+app.get('/social/config/:provider/instructions', socialAccountController.getProviderInstructions);
 
 // Configurar EJS
 app.set('view engine', 'ejs');
