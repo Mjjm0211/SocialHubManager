@@ -10,6 +10,7 @@ const livereload = require("livereload");
 const connectLivereload = require("connect-livereload");
 const oauthRoutes = require('./routes/oauth');
 const socialAccountController = require('./controllers/socialAccountController');
+const postsRoutes = require('./routes/posts');
 
 const app = express();
 
@@ -56,6 +57,10 @@ app.post('/social/config', socialAccountController.saveApiConfig);
 app.post('/social/config/:provider/verify', socialAccountController.verifyCredentials);
 app.delete('/social/config/:provider', socialAccountController.deleteConfig);
 app.get('/social/config/:provider/instructions', socialAccountController.getProviderInstructions);
+
+//Configurar posts
+app.use('/posts', postsRoutes); 
+
 
 // Configurar EJS
 app.set('view engine', 'ejs');
