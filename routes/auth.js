@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
-const User = require('../models/User'); // Asegúrate que tu modelo User está definido con Sequelize
 const { ensureAuthenticated } = require('../middleware/auth');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
 const { Sequelize } = require('sequelize');
-const SocialAccount = require('../models/SocialAccount');
+const { User, SocialAccount } = require("../models");
+
 
 // Registro (GET)
 router.get('/register', (req, res) => {

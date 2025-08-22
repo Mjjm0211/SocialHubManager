@@ -2,12 +2,11 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
-const User = require('../models/User');
-const SocialAccount = require('../models/SocialAccount'); // Agregar import
 const { ensureAuthenticated } = require('../middleware/auth');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
 const { Sequelize } = require('sequelize');
+const { User, SocialAccount,  } = require("../models");
 
 // Registro (GET)
 router.get('/register', (req, res) => {

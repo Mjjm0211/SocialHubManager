@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const { ensureAuthenticated } = require('../middleware/auth');
-const SocialAccount = require('../models/SocialAccount');
+const {SocialAccount } = require("../models");
 
 // Middleware para verificar token del usuario
 const ensureUserToken = async (req, res, next) => {
