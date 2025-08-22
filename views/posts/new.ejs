@@ -1,0 +1,26 @@
+<h2 class="text-lg font-bold mb-4">Crear publicación</h2>
+
+<form action="/posts" method="POST" class="space-y-4">
+  <div>
+    <label class="block font-medium">Contenido</label>
+    <textarea name="content" class="w-full border rounded p-2" rows="4"></textarea>
+  </div>
+
+  <div>
+    <label class="block font-medium">Selecciona redes sociales</label>
+    <% accounts.forEach(acc => { %>
+      <label class="flex items-center space-x-2">
+        <input type="checkbox" name="accounts" value="<%= acc.id %>" />
+        <span><%= acc.provider %> - <%= acc.displayName %></span>
+      </label>
+    <% }) %>
+  </div>
+
+  <div>
+    <label class="block font-medium">Programar publicación</label>
+    <input type="datetime-local" name="scheduledAt" class="border rounded p-2" />
+    <p class="text-sm text-gray-500">Déjalo vacío para publicar inmediatamente</p>
+  </div>
+
+  <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Publicar</button>
+</form>

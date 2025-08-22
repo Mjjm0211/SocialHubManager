@@ -1,230 +1,370 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configurar APIs - SocialHub</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-</head>
-<body class="h-full bg-gray-900">
-  <div class="min-h-full">
-    <!-- Navbar -->
-    <nav class="bg-gray-800/50">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex h-16 items-center justify-between">
-          <div class="flex items-center">
-            <div class="hidden md:block ml-10 flex items-baseline space-x-4">
-              <a href="/dashboard" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white">Dashboard</a>
-              <a href="/social/config" class="rounded-md bg-gray-950/50 px-3 py-2 text-sm font-medium text-white">Configurar APIs</a>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configurar APIs - SocialHub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+  </head>
+  <body class="h-full bg-gray-900">
+    <div class="min-h-full">
+      <!-- Navbar -->
+      <nav class="bg-gray-800/50">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="flex h-16 items-center justify-between">
+            <div class="flex items-center">
+              <div class="hidden md:block ml-10 flex items-baseline space-x-4">
+                <a
+                  href="/dashboard"
+                  class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
+                  >Dashboard</a
+                >
+                <a
+                  href="/social/config"
+                  class="rounded-md bg-gray-950/50 px-3 py-2 text-sm font-medium text-white"
+                  >Configurar APIs</a
+                >
+              </div>
             </div>
-          </div>
-          
-          <!-- Avatar dropdown (del dashboard anterior) -->
-          <div class="flex items-center space-x-3">
-            <span class="text-gray-300 text-sm">Hola, <%= user.name %></span>
-            <div class="relative">
-              <button id="avatarBtn" class="flex items-center rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                <img src="<%= user.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' %>" alt="Avatar" class="h-8 w-8 rounded-full">
-              </button>
-              <!-- Dropdown menu -->
-              <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50">
-                <form action="#" method="POST">
-                  <button type="submit" class="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700">Editar Perfil</button>
-                </form>
-                <form action="/logout" method="POST">
-                  <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-700">Cerrar sesión</button>
-                </form>
+
+            <!-- Avatar dropdown (del dashboard anterior) -->
+            <div class="flex items-center space-x-3">
+              <span class="text-gray-300 text-sm">Hola, <%= user.name %></span>
+              <div class="relative">
+                <button
+                  id="avatarBtn"
+                  class="flex items-center rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <img
+                    src="<%= user.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' %>"
+                    alt="Avatar"
+                    class="h-8 w-8 rounded-full"
+                  />
+                </button>
+                <!-- Dropdown menu -->
+                <div
+                  id="dropdownMenu"
+                  class="hidden absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50"
+                >
+                  <form action="#" method="POST">
+                    <button
+                      type="submit"
+                      class="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700"
+                    >
+                      Editar Perfil
+                    </button>
+                  </form>
+                  <form action="/logout" method="POST">
+                    <button
+                      type="submit"
+                      class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-700"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
 
-    <!-- Header -->
-    <header class="bg-gray-800">
-      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <h1 class="text-3xl font-bold tracking-tight text-white">Configuración de APIs</h1>
-        <p class="mt-2 text-gray-300">Configura tus credenciales para cada red social</p>
-      </div>
-    </header>
+      <!-- Header -->
+      <header class="bg-gray-800">
+        <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <h1 class="text-3xl font-bold tracking-tight text-white">
+            Configuración de APIs
+          </h1>
+          <p class="mt-2 text-gray-300">
+            Configura tus credenciales para cada red social
+          </p>
+        </div>
+      </header>
 
-    <!-- Main content -->
-    <main>
-      <div class="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
-        <!-- Info Section -->
-        <div class="bg-blue-900/30 border border-blue-500/50 rounded-lg p-4 mb-6">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <i class="fas fa-info-circle text-blue-400 text-xl"></i>
-            </div>
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-blue-200">Configuración de Credenciales</h3>
-              <div class="mt-2 text-sm text-blue-100">
-                <p>Para conectar tus redes sociales, necesitas crear aplicaciones en cada plataforma y obtener las credenciales correspondientes. Esto te permite tener control total sobre tus publicaciones y límites de API.</p>
+      <!-- Main content -->
+      <main>
+        <div class="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
+          <!-- Info Section -->
+          <div
+            class="bg-blue-900/30 border border-blue-500/50 rounded-lg p-4 mb-6"
+          >
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-400 text-xl"></i>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-blue-200">
+                  Configuración de Credenciales
+                </h3>
+                <div class="mt-2 text-sm text-blue-100">
+                  <p>
+                    Para conectar tus redes sociales, necesitas crear
+                    aplicaciones en cada plataforma y obtener las credenciales
+                    correspondientes. Esto te permite tener control total sobre
+                    tus publicaciones y límites de API.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Sección de información del usuario y seguridad (del dashboard anterior) -->
-        <div class="mb-6">
-          <div class="bg-gray-800 rounded-lg p-6">
-            <h2 class="text-xl font-semibold text-white mb-2">Bienvenido, <%= user.name %></h2>
-            <p class="text-gray-300">Email: <%= user.email %></p>
-          </div>
-          
-          <div class="mt-4 p-4 bg-gray-800 rounded-lg">
-            <h3 class="text-lg font-semibold text-white">Seguridad</h3>
-            <div class="mt-2 flex items-center justify-between">
-              <span class="text-gray-300">Autenticación en Dos Pasos:</span>
-              <% if (user.twoFactorEnabled) { %>
-                <span class="px-2 py-1 bg-green-600 text-white text-sm rounded-full">Activada</span>
-              <% } else { %>
-                <span class="px-2 py-1 bg-yellow-600 text-white text-sm rounded-full">No activada</span>
-                <a href="/2fa/setup" class="text-indigo-400 hover:text-indigo-300 text-sm">Activar</a>
-              <% } %>
+          <!-- Sección de información del usuario y seguridad -->
+          <div class="mb-6">
+            <div class="bg-gray-800 rounded-lg p-6">
+              <h2 class="text-xl font-semibold text-white mb-2">
+                Bienvenido, <%= user.name %>
+              </h2>
+              <p class="text-gray-300">Email: <%= user.email %></p>
+            </div>
+
+            <div class="mt-4 p-4 bg-gray-800 rounded-lg">
+              <h3 class="text-lg font-semibold text-white">Seguridad</h3>
+              <div class="mt-2 flex items-center justify-between">
+                <span class="text-gray-300">Autenticación en Dos Pasos:</span>
+                <% if (user.twoFactorEnabled) { %>
+                <span
+                  class="px-2 py-1 bg-green-600 text-white text-sm rounded-full"
+                  >Activada</span
+                >
+                <% } else { %>
+                <span
+                  class="px-2 py-1 bg-yellow-600 text-white text-sm rounded-full"
+                  >No activada</span
+                >
+                <a
+                  href="/2fa/setup"
+                  class="text-indigo-400 hover:text-indigo-300 text-sm"
+                  >Activar</a
+                >
+                <% } %>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Providers Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <% providers.forEach(provider=> { %>
+          <!-- Providers Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <% providers.forEach(provider=> { %>
             <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center space-x-3">
                   <div class="flex-shrink-0">
-                    <i class="<%= provider.icon %> text-2xl text-<%= provider.color %>-400"></i>
+                    <i
+                      class="<%= provider.icon %> text-2xl text-<%= provider.color %>-400"
+                    ></i>
                   </div>
                   <div>
                     <h3 class="text-lg font-semibold text-white">
                       <%= provider.name %>
                     </h3>
                     <% if (configs[provider.id]) { %>
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= configs[provider.id].isVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' %>">
-                        <i class="fas fa-<%= configs[provider.id].isVerified ? 'check' : 'exclamation-triangle' %> mr-1"></i>
-                        <%= configs[provider.id].isVerified ? 'Verificado' : 'Pendiente' %>
-                      </span>
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= configs[provider.id].isVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' %>"
+                    >
+                      <i
+                        class="fas fa-<%= configs[provider.id].isVerified ? 'check' : 'exclamation-triangle' %> mr-1"
+                      ></i>
+                      <%= configs[provider.id].isVerified ? 'Verificado' :
+                      'Pendiente' %>
+                    </span>
                     <% } else { %>
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        <i class="fas fa-cog mr-1"></i>No configurado
-                      </span>
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                    >
+                      <i class="fas fa-cog mr-1"></i>No configurado
+                    </span>
                     <% } %>
                   </div>
                 </div>
-                <button onclick="showInstructions('<%= provider.id %>')" class="text-<%= provider.color %>-400 hover:text-<%= provider.color %>-300">
+                <button
+                  onclick="showInstructions('<%= provider.id %>')"
+                  class="text-<%= provider.color %>-400 hover:text-<%= provider.color %>-300"
+                >
                   <i class="fas fa-question-circle"></i>
                 </button>
               </div>
-              
+
               <div class="mt-4">
                 <% if (configs[provider.id]) { %>
-                  <a href="/oauth/<%= provider.id %>" class="w-full inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium text-center">
-                    Reconectar
-                  </a>
+                <a
+                  href="/oauth/<%= provider.id %>"
+                  class="w-full inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium text-center"
+                >
+                  Reconectar
+                </a>
                 <% } else { %>
-                  <a href="/oauth/<%= provider.id %>" class="w-full inline-block px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium text-center">
-                    Conectar
-                  </a>
+                <a
+                  href="/oauth/<%= provider.id %>"
+                  class="w-full inline-block px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium text-center"
+                >
+                  Conectar
+                </a>
                 <% } %>
               </div>
             </div>
-          <% }) %>
+            <% }) %>
+          </div>
+          <!-- Crear Post - Condiciones -->
+          <div class="mt-10">
+            <% const hasVerifiedProvider = Object.values(configs).some(cfg =>
+            cfg.isVerified); const hasTwoFA = user && user.twoFactorEnabled; %>
+            <% if (hasVerifiedProvider && hasTwoFA) { %>
+            <!-- Mostrar botón para crear post -->
+            <div
+              class="bg-gray-800 rounded-lg p-6 border border-gray-700 text-center"
+            >
+              <h3 class="text-lg font-semibold text-white mb-4">
+                Publicar nuevo Post
+              </h3>
+              <a
+                href="/posts/new"
+                class="inline-block px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-md"
+              >
+                <i class="fas fa-plus-circle mr-2"></i> Crear Post
+              </a>
+            </div>
+            <% } else { %>
+            <!-- Mensaje de requisitos -->
+            <div
+              class="bg-gray-800 rounded-lg p-6 border border-gray-700 text-center"
+            >
+              <h3 class="text-lg font-semibold text-white mb-2">
+                Requisitos para crear un Post
+              </h3>
+              <ul class="text-gray-300 text-sm space-y-2">
+                <li>
+                  <i
+                    class="fas <%= hasVerifiedProvider ? 'fa-check text-green-500' : 'fa-times text-red-500' %>"
+                  ></i>
+                  Al menos una cuenta social verificada
+                </li>
+                <li>
+                  <i
+                    class="fas <%= hasTwoFA ? 'fa-check text-green-500' : 'fa-times text-red-500' %>"
+                  ></i>
+                  Autenticación en dos pasos activada
+                </li>
+              </ul>
+              <p class="mt-4 text-gray-400 text-xs">
+                Completa estos pasos para desbloquear la opción de publicar
+                posts.
+              </p>
+            </div>
+            <% } %>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Instructions Modal -->
+    <div
+      id="instructionsModal"
+      class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h3
+            id="instructionsTitle"
+            class="text-lg font-semibold text-white"
+          ></h3>
+          <button
+            onclick="closeInstructions()"
+            class="text-gray-400 hover:text-white"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div id="instructionsContent" class="text-gray-300">
+          <!-- Content will be loaded dynamically -->
         </div>
       </div>
-    </main>
-  </div>
-
-  <!-- Instructions Modal -->
-  <div id="instructionsModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-      <div class="flex items-center justify-between mb-4">
-        <h3 id="instructionsTitle" class="text-lg font-semibold text-white"></h3>
-        <button onclick="closeInstructions()" class="text-gray-400 hover:text-white">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <div id="instructionsContent" class="text-gray-300">
-        <!-- Content will be loaded dynamically -->
-      </div>
     </div>
-  </div>
 
-  <script>
-    // Script para el dropdown del avatar (del dashboard anterior)
-    const avatarBtn = document.getElementById('avatarBtn');
-    const dropdownMenu = document.getElementById('dropdownMenu');
-    
-    if (avatarBtn && dropdownMenu) {
-      avatarBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdownMenu.classList.toggle('hidden');
-      });
+    <script>
+      // Script para el dropdown del avatar 
+      const avatarBtn = document.getElementById("avatarBtn");
+      const dropdownMenu = document.getElementById("dropdownMenu");
 
-      // Cerrar el dropdown al hacer clic fuera
-      window.addEventListener('click', (e) => {
-        if (!avatarBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
-          dropdownMenu.classList.add('hidden');
-        }
-      });
-    }
+      if (avatarBtn && dropdownMenu) {
+        avatarBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          dropdownMenu.classList.toggle("hidden");
+        });
 
-    // Resto de funciones del nuevo dashboard
-    // Show instructions async 
-    async function showInstructions(provider) {
-      try {
-        const response = await fetch(`/auth/config/${provider}/instructions`);
-        const result = await response.json();
-        if (result.success) {
-          const instructions = result.instructions;
-          document.getElementById('instructionsTitle').textContent = instructions.title;
-          let content = `<div class="mb-4">
+        // Cerrar el dropdown al hacer clic fuera
+        window.addEventListener("click", (e) => {
+          if (
+            !avatarBtn.contains(e.target) &&
+            !dropdownMenu.contains(e.target)
+          ) {
+            dropdownMenu.classList.add("hidden");
+          }
+        });
+      }
+      // Show instructions async
+      async function showInstructions(provider) {
+        try {
+          const response = await fetch(`/auth/config/${provider}/instructions`);
+          const result = await response.json();
+          if (result.success) {
+            const instructions = result.instructions;
+            document.getElementById("instructionsTitle").textContent =
+              instructions.title;
+            let content = `<div class="mb-4">
             <p class="text-gray-300 mb-4">${instructions.description}</p>
             <h4 class="font-medium text-white mb-2">Pasos:</h4>
             <ol class="list-decimal list-inside space-y-2">`;
-          
-          instructions.steps.forEach(step => {
-            content += `<li class="text-gray-300">${step}</li>`;
-          });
-          
-          content += `</ol></div>`;
-          
-          if (instructions.fields) {
-            content += `<div class="border-t border-gray-600 pt-4">
+
+            instructions.steps.forEach((step) => {
+              content += `<li class="text-gray-300">${step}</li>`;
+            });
+
+            content += `</ol></div>`;
+
+            if (instructions.fields) {
+              content += `<div class="border-t border-gray-600 pt-4">
               <h4 class="font-medium text-white mb-2">Campos requeridos:</h4>
               <ul class="space-y-2">`;
-            
-            instructions.fields.forEach(field => {
-              content += `<li class="text-gray-300">
-                <strong>${field.label}</strong>${field.required ? ' (Requerido)' : ' (Opcional)'}
-                <br><span class="text-gray-400 text-sm">${field.description}</span>
+
+              instructions.fields.forEach((field) => {
+                content += `<li class="text-gray-300">
+                <strong>${field.label}</strong>${
+                  field.required ? " (Requerido)" : " (Opcional)"
+                }
+                <br><span class="text-gray-400 text-sm">${
+                  field.description
+                }</span>
               </li>`;
-            });
-            
-            content += `</ul></div>`;
+              });
+
+              content += `</ul></div>`;
+            }
+
+            document.getElementById("instructionsContent").innerHTML = content;
+            document
+              .getElementById("instructionsModal")
+              .classList.remove("hidden");
           }
-          
-          document.getElementById('instructionsContent').innerHTML = content;
-          document.getElementById('instructionsModal').classList.remove('hidden');
+        } catch (error) {
+          console.error("Error loading instructions:", error);
         }
-      } catch (error) {
-        console.error('Error loading instructions:', error);
       }
-    }
 
-    // Close instructions modal
-    function closeInstructions() {
-      document.getElementById('instructionsModal').classList.add('hidden');
-    }
-
-    // Close modal when clicking outside
-    document.getElementById('instructionsModal').addEventListener('click', (e) => {
-      if (e.target.id === 'instructionsModal') {
-        closeInstructions();
+      // Close instructions modal
+      function closeInstructions() {
+        document.getElementById("instructionsModal").classList.add("hidden");
       }
-    });
-  </script>
-</body>
+
+      // Close modal when clicking outside
+      document
+        .getElementById("instructionsModal")
+        .addEventListener("click", (e) => {
+          if (e.target.id === "instructionsModal") {
+            closeInstructions();
+          }
+        });
+    </script>
+  </body>
 </html>
