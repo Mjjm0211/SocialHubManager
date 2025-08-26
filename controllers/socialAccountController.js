@@ -1,6 +1,6 @@
 // controllers/socialConfigController.js
 const UserSocialConfig = require('../models/UserSocialConfig');
-const SocialAccount = require('../models/SocialAccount');
+const SocialAccount = require('../models/socialAccount');
 const { ensureAuthenticated } = require('../middleware/auth');
 
 // Mostrar configuración de APIs del usuario
@@ -25,7 +25,7 @@ const showApiConfig = async (req, res) => {
     res.render('social-config', { 
       user: req.user,
       configs: configMap,
-      providers: ['twitter', 'facebook', 'instagram', 'linkedin']
+      providers: ['twitter', 'facebook', 'instagram', 'linkedin', 'mastodon'] // Proveedores 
     });
   } catch (error) {
     console.error('Error loading social config:', error);
@@ -264,7 +264,15 @@ function validateProviderCredentials(provider, credentials) {
         };
       }
       return { isValid: true };
-      
+    
+    case 'mastodon':
+      if (!clientId || !clientSecret) {
+        return {
+          isValid: false,
+          message: 'Mastodon requiere Client ID y Client Secret'
+        };
+      }
+      return { isValid: true };
     default:
       return {
         isValid: false,
@@ -319,6 +327,18 @@ function getSetupInstructions(provider) {
         'Solicita acceso a "Sign In with LinkedIn" y "Share on LinkedIn"',
         'Copia Client ID y Client Secret',
         'Configura redirect URLs autorizadas'
+      ],
+      required: ['clientId', 'clientSecret'],
+      optional: []
+    },
+    mastodon: {
+      title: 'Configurar Mastodon App',
+      steps: [
+        'Ve a tu instancia de Mastodon (ej. https://mastodon.social)',
+        'En configuración, ve a "Desarrolladores" y crea una nueva aplicación',
+        'Copia Client ID y Client Secret',
+        'Configura los permisos necesarios (leer, escribir, seguir)',
+        'Usa la URL de tu instancia como Client ID'
       ],
       required: ['clientId', 'clientSecret'],
       optional: []
