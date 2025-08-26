@@ -73,7 +73,7 @@ module.exports = (sequelize, DataTypes) => {
       provider: {
         type: DataTypes.STRING,
         allowNull: false,
-        validate: { isIn: [['twitter','facebook','instagram','linkedin']] }
+        validate: { isIn: [['twitter','facebook','instagram','linkedin', 'mastodon']] }
       },
       clientId: { type: DataTypes.STRING, allowNull: true },
       clientSecret: { type: DataTypes.TEXT, allowNull: true },
@@ -111,9 +111,24 @@ module.exports = (sequelize, DataTypes) => {
       case 'facebook': return await verifyFacebookCredentials(credentials);
       case 'instagram': return await verifyInstagramCredentials(credentials);
       case 'linkedin': return await verifyLinkedInCredentials(credentials);
+      case 'mastodon': return await verifyMastodonCredentials(credentials);
       default: throw new Error(`Provider ${provider} not supported`);
     }
   }
+
+
+  async function verifyMastodonCredentials({ clientId, clientSecret }) {
+    try {
+      const response = await fetch(`${clientId}/api/v1/apps`, {
+        headers: { 'Authorization': `Bearer ${clientSecret}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return { isValid:true, userData:data, restrictions:null };
+      }
+      return { isValid:false, error:'Invalid Mastodon credentials' };
+    } catch (error) { return { isValid:false, error:error.message }; }
+  } 
 
   async function verifyTwitterCredentials({ clientId, clientSecret, bearerToken }) {
     try {
