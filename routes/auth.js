@@ -138,6 +138,7 @@ router.get('/dashboard', ensureAuthenticated, async (req, res) => {
       { id: 'twitter', name: 'Twitter', color: 'sky', icon: 'fab fa-twitter' },
       { id: 'instagram', name: 'Instagram', color: 'pink', icon: 'fab fa-instagram' },
       { id: 'linkedin', name: 'LinkedIn', color: 'blue', icon: 'fab fa-linkedin' },
+      { id: 'mastodon', name: 'Mastodon', color: 'purple', icon: 'fab fa-mastodon' }
     ];
 
     // Construir configs a partir de la base de datos
