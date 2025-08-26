@@ -97,4 +97,37 @@ router.get('/twitter/callback', ensureAuthenticated, (req, res, next) => {
   })(req, res, next);
 });
 
+// en routes/oauth.js
+router.get('/mastodon', ensureAuthenticated, passport.authenticate('mastodon'));
+
+router.get('/mastodon/callback', ensureAuthenticated, (req, res, next) => {
+  passport.authenticate('mastodon', async (err, profile) => {
+    if (err || !profile) {
+      req.flash('error_msg', 'Error conectando con Mastodon');
+      return res.redirect('/dashboard');
+    }
+    try {
+      await SocialAccount.upsert({
+        userId: req.user.id,
+        provider: 'mastodon',
+        providerId: profile.id,
+        token: profile.accessToken,
+        refreshToken: profile.refreshToken,
+        username: profile.username,
+        displayName: profile.displayName,
+        avatar: profile.avatar,
+        profileData: JSON.stringify(profile.profileData),
+        isActive: true
+      });
+
+      req.flash('success_msg', '¡Mastodon conectado exitosamente!');
+      res.redirect('/dashboard');
+    } catch (error) {
+      console.error(error);
+      req.flash('error_msg', 'Error guardando datos de Mastodon');
+      res.redirect('/dashboard');
+    }
+  })(req, res, next);
+});
+
 module.exports = router;
