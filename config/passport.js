@@ -5,7 +5,7 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const LinkedInStrategy = require("passport-linkedin-oauth2").Strategy;
 const TwitterStrategy = require("passport-twitter").Strategy;
 const { TwitterApi } = require("twitter-api-v2"); 
-
+const OAuth2Strategy = require('passport-oauth2').Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
 const InstagramStrategy = require("passport-instagram").Strategy;
 const bcrypt = require("bcryptjs");
@@ -84,6 +84,41 @@ passport.use(
     }
   )
 );
+//estrategia mastodon
+
+
+passport.use('mastodon', new OAuth2Strategy({
+  authorizationURL: 'https://mastodon.social/oauth/authorize',
+  tokenURL: 'https://mastodon.social/oauth/token',
+  clientID: process.env.MASTODON_CLIENT_ID,
+  clientSecret: process.env.MASTODON_CLIENT_SECRET,
+  callbackURL: 'http://localhost:3000/oauth/mastodon/callback'
+},
+async (accessToken, refreshToken, profile, done) => {
+  try {
+    // Obtener perfil
+    const response = await fetch('https://mastodon.social/api/v1/accounts/verify_credentials', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    const profileData = await response.json();
+
+    done(null, {
+      id: profileData.id,
+      username: profileData.username,
+      displayName: profileData.display_name,
+      avatar: profileData.avatar,
+      accessToken,
+      refreshToken,
+      profileData
+    });
+  } catch (err) {
+    done(err);
+  }
+}));
+
+
+
+
 
 // Estrategia LinkedIn
 passport.use(
@@ -228,6 +263,8 @@ passport.deserializeUser(async (id, done) => {
     const user = await User.findByPk(id, { include: [{ model: SocialAccount, as: "socialAccounts" }] });
     done(null, user);
   } catch (err) {
+    console.error('❌ Error en deserializeUser:', err.message);
+    console.error(err); // muestra detalles como error de SQL, tabla/columna inexistente, etc.
     done(err);
   }
 });
