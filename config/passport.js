@@ -112,7 +112,6 @@ passport.use(
           }
         );
         const profileData = await response.json();
-
         done(null, {
           id: profileData.id,
           username: profileData.username,
@@ -216,8 +215,8 @@ function createFacebookStrategy() {
               username: profile.username || profile.displayName,
               token: accessToken,
               refreshToken: refreshToken || null,
-              clientId: pageId, // aquí guardamos pageId
-              clientSecret: pageAccessToken, // aquí guardamos pageAccessToken
+              clientId: pageId, 
+              clientSecret: pageAccessToken, 
               avatar: profile.photos?.[0]?.value || null,
               profileData: JSON.stringify({
                 name: profile.displayName,
@@ -296,7 +295,7 @@ const createTwitterStrategy = (consumerKey, consumerSecret, callbackURL) => {
           });
         }
 
-        profile.socialAccountId = account.id; // opcional, útil para futuras consultas
+        profile.socialAccountId = account.id; 
 
         return done(null, profile);
       } catch (err) {
@@ -326,6 +325,19 @@ const publishToSocial = async (accountId, provider, content, imageUrl) => {
       throw new Error(`No se encontró la cuenta social (ID: ${accountId})`);
     switch (provider) {
       case "twitter":
+        // Buscar la cuenta de Facebook del usuario
+        const socialAccount = await SocialAccount.findOne({
+          where: {
+            id: accountId, // aquí accountId en realidad es el userId
+            provider: "twitter",
+          },
+        });
+
+        if (!socialAccount) {
+          throw new Error(
+            `No se encontró la cuenta de Twitter para userId: ${accountId}`
+          );
+        }
         if (!socialAccount.token || !socialAccount.refreshToken)
           throw new Error("Tokens de Twitter no disponibles");
 
@@ -341,7 +353,7 @@ const publishToSocial = async (accountId, provider, content, imageUrl) => {
         // Buscar la cuenta de Facebook del usuario
         const socialAccount = await SocialAccount.findOne({
           where: {
-            userId: accountId, // aquí accountId en realidad es el userId
+            id: accountId, 
             provider: "facebook",
           },
         });
@@ -352,8 +364,8 @@ const publishToSocial = async (accountId, provider, content, imageUrl) => {
           );
         }
 
-        const pageId = socialAccount.clientId; // pageId guardado
-        const pageAccessToken = socialAccount.clientSecret; // pageAccessToken guardado
+        const pageId = socialAccount.clientId; 
+        const pageAccessToken = socialAccount.clientSecret; 
 
         if (!pageId || !pageAccessToken) {
           throw new Error(
@@ -391,7 +403,7 @@ const publishToSocial = async (accountId, provider, content, imageUrl) => {
         if (!socialAccount.token)
           throw new Error("Token de Instagram no disponible");
 
-        const igUserId = process.env.IG_USER_ID; // o guárdalo en tu BD (con Graph API Business)
+        const igUserId = process.env.IG_USER_ID; 
         if (!imageUrl) throw new Error("Instagram requiere imagen");
 
         // Paso 1: crear contenedor de medios
