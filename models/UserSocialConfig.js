@@ -73,7 +73,7 @@ module.exports = (sequelize, DataTypes) => {
       provider: {
         type: DataTypes.STRING,
         allowNull: false,
-        validate: { isIn: [['twitter','facebook','instagram','linkedin', 'mastodon']] }
+        validate: { isIn: [['twitter', 'facebook', 'instagram', 'linkedin', 'mastodon']] }
       },
       clientId: { type: DataTypes.STRING, allowNull: true },
       clientSecret: { type: DataTypes.TEXT, allowNull: true },
@@ -82,7 +82,7 @@ module.exports = (sequelize, DataTypes) => {
       apiSecret: { type: DataTypes.TEXT, allowNull: true },
       bearerToken: { type: DataTypes.TEXT, allowNull: true },
       webhookUrl: { type: DataTypes.STRING, allowNull: true },
-      rateLimitTier: { type: DataTypes.STRING, defaultValue: 'basic', validate: { isIn: [['basic','elevated','academic','premium']] } },
+      rateLimitTier: { type: DataTypes.STRING, defaultValue: 'basic', validate: { isIn: [['basic', 'elevated', 'academic', 'premium']] } },
       permissions: { type: DataTypes.JSON, allowNull: true },
       restrictions: { type: DataTypes.JSON, allowNull: true },
       isVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
@@ -96,8 +96,8 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'UserSocialConfigs',
       timestamps: true,
       indexes: [
-        { unique: true, fields: ['userId','provider'] },
-        { fields: ['provider','isActive'] }
+        { unique: true, fields: ['userId', 'provider'] },
+        { fields: ['provider', 'isActive'] }
       ]
     }
   );
@@ -117,18 +117,27 @@ module.exports = (sequelize, DataTypes) => {
   }
 
 
-  async function verifyMastodonCredentials({ clientId, clientSecret }) {
+  async function verifyMastodonCredentials({ instanceUrl, accessToken }) {
     try {
-      const response = await fetch(`${clientId}/api/v1/apps`, {
-        headers: { 'Authorization': `Bearer ${clientSecret}` }
+      console.log('📢 Publicando en Mastodon con token:', account.token);
+      console.log('📢 Provider ID:', account.providerId);
+
+      const response = await fetch(`${instanceUrl}/api/v1/accounts/verify_credentials`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
       });
+
       if (response.ok) {
-        const data = await response.json();
-        return { isValid:true, userData:data, restrictions:null };
+        const userData = await response.json();
+        return { isValid: true, userData, restrictions: null };
       }
-      return { isValid:false, error:'Invalid Mastodon credentials' };
-    } catch (error) { return { isValid:false, error:error.message }; }
-  } 
+
+      return { isValid: false, error: 'Invalid access token' };
+    } catch (error) {
+      return { isValid: false, error: error.message };
+    }
+  }
 
   async function verifyTwitterCredentials({ clientId, clientSecret, bearerToken }) {
     try {
@@ -137,10 +146,10 @@ module.exports = (sequelize, DataTypes) => {
       });
       if (response.ok) {
         const data = await response.json();
-        return { isValid:true, userData:data.data, restrictions:{ tweetCap:data.data.public_metrics || null, rateLimits: response.headers.get('x-rate-limit-remaining') } };
+        return { isValid: true, userData: data.data, restrictions: { tweetCap: data.data.public_metrics || null, rateLimits: response.headers.get('x-rate-limit-remaining') } };
       }
-      return { isValid:false, error:'Invalid Twitter credentials' };
-    } catch (error) { return { isValid:false, error:error.message }; }
+      return { isValid: false, error: 'Invalid Twitter credentials' };
+    } catch (error) { return { isValid: false, error: error.message }; }
   }
 
   async function verifyFacebookCredentials({ clientId, clientSecret }) {
@@ -148,10 +157,10 @@ module.exports = (sequelize, DataTypes) => {
       const response = await fetch(`https://graph.facebook.com/me/accounts?access_token=${clientSecret}`);
       if (response.ok) {
         const data = await response.json();
-        return { isValid:true, userData:data, restrictions:null };
+        return { isValid: true, userData: data, restrictions: null };
       }
-      return { isValid:false, error:'Invalid Facebook credentials' };
-    } catch (error) { return { isValid:false, error:error.message }; }
+      return { isValid: false, error: 'Invalid Facebook credentials' };
+    } catch (error) { return { isValid: false, error: error.message }; }
   }
 
   async function verifyInstagramCredentials({ clientId, clientSecret }) {
@@ -159,22 +168,22 @@ module.exports = (sequelize, DataTypes) => {
       const response = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${clientSecret}`);
       if (response.ok) {
         const data = await response.json();
-        return { isValid:true, userData:data, restrictions:null };
+        return { isValid: true, userData: data, restrictions: null };
       }
-      return { isValid:false, error:'Invalid Instagram credentials' };
-    } catch (error) { return { isValid:false, error:error.message }; }
+      return { isValid: false, error: 'Invalid Instagram credentials' };
+    } catch (error) { return { isValid: false, error: error.message }; }
   }
 
   async function verifyLinkedInCredentials({ clientId, clientSecret }) {
     try {
       const response = await fetch('https://api.linkedin.com/v2/me', {
-        headers: { 'Authorization': `Bearer ${clientSecret}`, 'cache-control':'no-cache', 'X-Restli-Protocol-Version':'2.0.0' }
+        headers: { 'Authorization': `Bearer ${clientSecret}`, 'cache-control': 'no-cache', 'X-Restli-Protocol-Version': '2.0.0' }
       });
       if (response.ok) {
         const data = await response.json();
-        return { isValid:true, userData:data, restrictions:null };
+        return { isValid: true, userData: data, restrictions: null };
       }
-      return { isValid:false, error:'Invalid LinkedIn credentials' };
-    } catch (error) { return { isValid:false, error:error.message }; }
+      return { isValid: false, error: 'Invalid LinkedIn credentials' };
+    } catch (error) { return { isValid: false, error: error.message }; }
   }
 };
