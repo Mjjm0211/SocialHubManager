@@ -27,7 +27,7 @@ router.get("/callback", ensureAuthenticated, (req, res, next) => {
         return res.redirect("/dashboard");
       }
 
-      // Guardamos o actua  lizamos cuenta
+      // Guardamos o actualizamos cuenta
       await SocialAccount.upsert({
         userId: req.user.id,
         provider: "facebook",

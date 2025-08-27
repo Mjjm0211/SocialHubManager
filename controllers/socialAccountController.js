@@ -1,4 +1,3 @@
-// controllers/socialConfigController.js
 const UserSocialConfig = require('../models/UserSocialConfig');
 const SocialAccount = require('../models/socialAccount');
 const { ensureAuthenticated } = require('../middleware/auth');

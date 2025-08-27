@@ -5,7 +5,7 @@ const { Post, SocialAccount, PostAccount } = require("../models");
 const { publishToSocial } = require("../config/passport");
 
 const multer = require("multer");
-const upload = multer(); // Aquí puedes luego configurar almacenamiento si lo deseas
+const upload = multer(); 
 
 // Formulario para crear publicación
 router.get("/new", ensureAuthenticated, async (req, res) => {
@@ -22,7 +22,7 @@ router.post("/", ensureAuthenticated, upload.none(), async (req, res) => {
 
     const { content, scheduledAt } = req.body;
     let { accounts } = req.body;
-
+    console.log("Cuentas seleccionadas:", accounts);
     // Si se seleccionó solo una cuenta, `accounts` puede venir como string, no como array
     if (typeof accounts === "string") {
       accounts = [accounts];

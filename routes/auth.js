@@ -149,7 +149,7 @@ router.get('/dashboard', ensureAuthenticated, async (req, res) => {
         token: account.token,
         refreshToken: account.refreshToken,
         displayName: account.displayName,
-        isVerified: true // opcional, si quieres agregar verificación de token
+        isVerified: true 
       };
     });
 
