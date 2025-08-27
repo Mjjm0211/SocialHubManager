@@ -14,6 +14,9 @@ const postsRoutes = require('./routes/posts');
 const facebookAuthRoutes = require('./routes/facebookAuth');
 
 const app = express();
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Configuración de PostgreSQL con Sequelize
 const sequelize = new Sequelize(
@@ -33,9 +36,6 @@ sequelize.authenticate()
   .then(() => console.log('PostgreSQL conectado exitosamente'))
   .catch(err => console.error('Error al conectar a PostgreSQL:', err));
 
-// Middlewares
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
 
 // Sesión y flash
 app.use(session({
