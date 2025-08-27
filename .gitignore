@@ -1,6 +1,8 @@
 node_modules
 .env
-package-lock.json
-package.json
 config.json
 config.js
+package-lock.json
+package.json
+readme.md
+.DS_Store
