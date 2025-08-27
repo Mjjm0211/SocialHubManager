@@ -3,7 +3,7 @@ const express = require('express');
 const session = require('express-session');
 const flash = require('connect-flash');
 const { Sequelize } = require('sequelize');
-const { configureLocalStrategy, passport } = require('./config/passport');
+const { configureLocalStrategy, passport, createFacebookStrategy} = require('./config/passport');
 const authRoutes = require('./routes/auth');
 const socialAuthRoutes = require('./routes/socialAuth');
 const livereload = require("livereload");
@@ -11,6 +11,7 @@ const connectLivereload = require("connect-livereload");
 const oauthRoutes = require('./routes/oauth');
 const socialAccountController = require('./controllers/socialAccountController');
 const postsRoutes = require('./routes/posts');
+const facebookAuthRoutes = require('./routes/facebookAuth');
 
 const app = express();
 
@@ -46,11 +47,16 @@ app.use(flash());
 
 // Passport
 configureLocalStrategy();
+createFacebookStrategy();
 app.use(passport.initialize());
 app.use(passport.session());
 
 // Configurar rutas OAuth
 app.use('/oauth', oauthRoutes);
+
+// Rutas sociales
+app.use('/oauth/facebook', facebookAuthRoutes); 
+
 // Rutas adicionales para configuración social
 app.get('/social/config', socialAccountController.showApiConfig);
 app.post('/social/config', socialAccountController.saveApiConfig);
@@ -60,7 +66,6 @@ app.get('/social/config/:provider/instructions', socialAccountController.getProv
 
 //Configurar posts
 app.use('/posts', postsRoutes); 
-
 
 // Configurar EJS
 app.set('view engine', 'ejs');
