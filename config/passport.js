@@ -9,6 +9,7 @@ const OAuth2Strategy = require('passport-oauth2').Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
 const InstagramStrategy = require("passport-instagram").Strategy;
 const bcrypt = require("bcryptjs");
+const fetch = require('node-fetch');
 
 // Importar modelos desde index.js
 const { User, SocialAccount } = require("../models");
@@ -215,7 +216,7 @@ const createTwitterStrategy = (consumerKey, consumerSecret, callbackURL) => {
  * @param {string} provider - 'twitter' (puede extenderse a otras redes)
  * @param {string} content - Texto a publicar
  */
-const publishToSocial = async (accountId, provider, content) => {
+const publishToSocial = async (accountId, provider, content, imageUrl) => {
   try {
     const socialAccount = await SocialAccount.findByPk(accountId);
     if (!socialAccount) throw new Error(`No se encontró la cuenta social (ID: ${accountId})`);
@@ -225,7 +226,6 @@ const publishToSocial = async (accountId, provider, content) => {
         if (!socialAccount.token || !socialAccount.refreshToken)
           throw new Error("Tokens de Twitter no disponibles");
 
-        // Inicializar cliente de Twitter
         const twitterClient = new TwitterApi({
           appKey: process.env.TWITTER_API_KEY,
           appSecret: process.env.TWITTER_API_SECRET,
@@ -233,9 +233,59 @@ const publishToSocial = async (accountId, provider, content) => {
           accessSecret: socialAccount.refreshToken,
         });
 
-        // Publicar tweet
-        const tweet = await twitterClient.v2.tweet(content);
-        return tweet;
+        return await twitterClient.v2.tweet(content);
+
+      case "mastodon":
+        if (!socialAccount.token)
+          throw new Error("Token de Mastodon no disponible");
+
+       
+        const mastodonBaseUrl = socialAccount.instanceUrl || "https://mastodon.social";
+
+        let mediaId = null;
+        if (imageUrl) {
+          // Subir imagen primero
+          const imageResponse = await fetch(`${mastodonBaseUrl}/api/v2/media`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${socialAccount.token}`,
+            },
+            body: (() => {
+              const formData = new FormData();
+              // Aquí deberías leer el archivo local o desde URL y anexarlo
+              // Por simplicidad asumo imageUrl es path local, necesitarás fs.createReadStream
+              const fs = require('fs');
+              formData.append('file', fs.createReadStream(`.${imageUrl}`));
+              return formData;
+            })(),
+          });
+          if (!imageResponse.ok) {
+            throw new Error(`Error subiendo imagen a Mastodon: ${imageResponse.statusText}`);
+          }
+          const imageData = await imageResponse.json();
+          mediaId = imageData.id;
+        }
+
+        // Publicar el estado
+        const postBody = {
+          status: content,
+          media_ids: mediaId ? [mediaId] : undefined,
+        };
+
+        const postResponse = await fetch(`${mastodonBaseUrl}/api/v1/statuses`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${socialAccount.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(postBody),
+        });
+
+        if (!postResponse.ok) {
+          throw new Error(`Error publicando en Mastodon: ${postResponse.statusText}`);
+        }
+
+        return await postResponse.json();
 
       default:
         throw new Error(`Publicación no implementada para ${provider}`);
@@ -245,6 +295,7 @@ const publishToSocial = async (accountId, provider, content) => {
     throw err;
   }
 };
+
 // Credenciales de conexión a Twitter dinámicas
 passport.use(
   "twitter",
