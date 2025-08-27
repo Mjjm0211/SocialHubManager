@@ -4,16 +4,18 @@ const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const LinkedInStrategy = require("passport-linkedin-oauth2").Strategy;
 const TwitterStrategy = require("passport-twitter").Strategy;
-const { TwitterApi } = require("twitter-api-v2"); 
-const OAuth2Strategy = require('passport-oauth2').Strategy;
+const { TwitterApi } = require("twitter-api-v2");
+const OAuth2Strategy = require("passport-oauth2").Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
 const InstagramStrategy = require("passport-instagram").Strategy;
 const bcrypt = require("bcryptjs");
+let fetch;
+(async () => {
+  fetch = (await import("node-fetch")).default;
+})();
 
 // Importar modelos desde index.js
 const { User, SocialAccount } = require("../models");
-
-
 
 // Estrategia Local
 const configureLocalStrategy = () => {
@@ -47,11 +49,14 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL:
-        process.env.GOOGLE_CALLBACK_URL || "http://localhost:3000/auth/google/callback",
+        process.env.GOOGLE_CALLBACK_URL ||
+        "http://localhost:3000/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        let user = await User.findOne({ where: { email: profile.emails[0].value } });
+        let user = await User.findOne({
+          where: { email: profile.emails[0].value },
+        });
 
         if (!user) {
           user = await User.create({
@@ -86,39 +91,43 @@ passport.use(
 );
 //estrategia mastodon
 
+passport.use(
+  "mastodon",
+  new OAuth2Strategy(
+    {
+      authorizationURL: "https://mastodon.social/oauth/authorize",
+      tokenURL: "https://mastodon.social/oauth/token",
+      clientID: process.env.MASTODON_CLIENT_ID,
+      clientSecret: process.env.MASTODON_CLIENT_SECRET,
+      callbackURL: "http://localhost:3000/oauth/mastodon/callback",
+      scope: "read write",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        // Obtener perfil
+        const response = await fetch(
+          "https://mastodon.social/api/v1/accounts/verify_credentials",
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
+        const profileData = await response.json();
 
-passport.use('mastodon', new OAuth2Strategy({
-  authorizationURL: 'https://mastodon.social/oauth/authorize',
-  tokenURL: 'https://mastodon.social/oauth/token',
-  clientID: process.env.MASTODON_CLIENT_ID,
-  clientSecret: process.env.MASTODON_CLIENT_SECRET,
-  callbackURL: 'http://localhost:3000/oauth/mastodon/callback'
-},
-async (accessToken, refreshToken, profile, done) => {
-  try {
-    // Obtener perfil
-    const response = await fetch('https://mastodon.social/api/v1/accounts/verify_credentials', {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
-    const profileData = await response.json();
-
-    done(null, {
-      id: profileData.id,
-      username: profileData.username,
-      displayName: profileData.display_name,
-      avatar: profileData.avatar,
-      accessToken,
-      refreshToken,
-      profileData
-    });
-  } catch (err) {
-    done(err);
-  }
-}));
-
-
-
-
+        done(null, {
+          id: profileData.id,
+          username: profileData.username,
+          displayName: profileData.display_name,
+          avatar: profileData.avatar,
+          accessToken,
+          refreshToken,
+          profileData,
+        });
+      } catch (err) {
+        done(err);
+      }
+    }
+  )
+);
 
 // Estrategia LinkedIn
 passport.use(
@@ -127,7 +136,8 @@ passport.use(
       clientID: process.env.LINKEDIN_CLIENT_ID,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
       callbackURL:
-        process.env.LINKEDIN_CALLBACK_URL || "http://localhost:3000/auth/linkedin/callback",
+        process.env.LINKEDIN_CALLBACK_URL ||
+        "http://localhost:3000/auth/linkedin/callback",
       scope: ["r_emailaddress", "r_liteprofile", "w_member_social"],
     },
     async (accessToken, refreshToken, profile, done) => {
@@ -160,6 +170,93 @@ passport.use(
   )
 );
 
+// Estrategia Facebook
+function createFacebookStrategy() {
+  passport.use(
+    new FacebookStrategy(
+      {
+        clientID: process.env.FACEBOOK_CLIENT_ID,
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+        callbackURL: "http://localhost:3000/oauth/facebook/callback",
+        profileFields: ["id", "displayName", "photos", "email"],
+        passReqToCallback: true, // para obtener req
+      },
+
+      async (req, accessToken, refreshToken, profile, done) => {
+        try {
+          const userId = req.user.id;
+
+          // Obtener páginas administradas
+          let pageId = null;
+          let pageAccessToken = null;
+          try {
+            const pagesRes = await fetch(
+              `https://graph.facebook.com/me/accounts?access_token=${accessToken}`
+            );
+            const pagesData = await pagesRes.json();
+            if (pagesData.data && pagesData.data.length > 0) {
+              pageId = pagesData.data[0].id;
+              pageAccessToken = pagesData.data[0].access_token;
+            }
+          } catch (err) {
+            console.warn("No se pudo obtener página de Facebook:", err);
+          }
+
+          // Buscar la SocialAccount
+          let account = await SocialAccount.findOne({
+            where: { provider: "facebook", providerId: profile.id },
+          });
+          if (!account) {
+            // Crear nueva
+            account = await SocialAccount.create({
+              userId,
+              provider: "facebook",
+              providerId: profile.id,
+              displayName: profile.displayName,
+              username: profile.username || profile.displayName,
+              token: accessToken,
+              refreshToken: refreshToken || null,
+              clientId: pageId, // aquí guardamos pageId
+              clientSecret: pageAccessToken, // aquí guardamos pageAccessToken
+              avatar: profile.photos?.[0]?.value || null,
+              profileData: JSON.stringify({
+                name: profile.displayName,
+                email: profile.emails?.[0]?.value || null,
+              }),
+              isActive: true,
+            });
+          } else if (account) {
+            // Actualizar existente
+            await account.update({
+              userId,
+              displayName: profile.displayName,
+              username: profile.username || profile.displayName,
+              token: accessToken,
+              refreshToken: refreshToken || null,
+              clientId: pageId,
+              clientSecret: pageAccessToken,
+              avatar: profile.photos?.[0]?.value || null,
+              profileData: JSON.stringify({
+                name: profile.displayName,
+                email: profile.emails?.[0]?.value || null,
+              }),
+              isActive: true,
+              updatedAt: new Date(),
+            });
+          }
+
+          profile.socialAccountId = account.id;
+
+          return done(null, profile);
+        } catch (err) {
+          console.error("Error guardando SocialAccount Facebook:", err);
+          return done(err);
+        }
+      }
+    )
+  );
+}
+
 // Estrategia Twitter - Configuración dinámica
 const createTwitterStrategy = (consumerKey, consumerSecret, callbackURL) => {
   return new TwitterStrategy(
@@ -188,7 +285,7 @@ const createTwitterStrategy = (consumerKey, consumerSecret, callbackURL) => {
           },
         });
 
-        if (!created) {
+        if (created) {
           // Si ya existía, actualizarla
           await account.update({
             userId: userId,
@@ -209,23 +306,29 @@ const createTwitterStrategy = (consumerKey, consumerSecret, callbackURL) => {
     }
   );
 };
+
 /**
  * Publica contenido en la red social especificada
  * @param {number} accountId - ID de SocialAccount
  * @param {string} provider - 'twitter' (puede extenderse a otras redes)
  * @param {string} content - Texto a publicar
  */
-const publishToSocial = async (accountId, provider, content) => {
+const publishToSocial = async (accountId, provider, content, imageUrl) => {
+  console.log("accountId:", accountId);
   try {
-    const socialAccount = await SocialAccount.findByPk(accountId);
-    if (!socialAccount) throw new Error(`No se encontró la cuenta social (ID: ${accountId})`);
-
+    const socialAccount = await SocialAccount.findOne({
+      where: {
+        userId: accountId,
+      },
+    });
+    console.log("socialAccount:", socialAccount);
+    if (!socialAccount)
+      throw new Error(`No se encontró la cuenta social (ID: ${accountId})`);
     switch (provider) {
       case "twitter":
         if (!socialAccount.token || !socialAccount.refreshToken)
           throw new Error("Tokens de Twitter no disponibles");
 
-        // Inicializar cliente de Twitter
         const twitterClient = new TwitterApi({
           appKey: process.env.TWITTER_API_KEY,
           appSecret: process.env.TWITTER_API_SECRET,
@@ -233,18 +336,166 @@ const publishToSocial = async (accountId, provider, content) => {
           accessSecret: socialAccount.refreshToken,
         });
 
-        // Publicar tweet
-        const tweet = await twitterClient.v2.tweet(content);
-        return tweet;
+        return await twitterClient.v2.tweet(content);
+      case "facebook": {
+        // Buscar la cuenta de Facebook del usuario
+        const socialAccount = await SocialAccount.findOne({
+          where: {
+            userId: accountId, // aquí accountId en realidad es el userId
+            provider: "facebook",
+          },
+        });
+
+        if (!socialAccount) {
+          throw new Error(
+            `No se encontró la cuenta de Facebook para userId: ${accountId}`
+          );
+        }
+
+        const pageId = socialAccount.clientId; // pageId guardado
+        const pageAccessToken = socialAccount.clientSecret; // pageAccessToken guardado
+
+        if (!pageId || !pageAccessToken) {
+          throw new Error(
+            "No se han definido pageId o pageAccessToken en SocialAccount"
+          );
+        }
+
+        let endpoint = `https://graph.facebook.com/${pageId}/feed`;
+        let body = new URLSearchParams({
+          message: content,
+          access_token: pageAccessToken,
+        });
+
+        if (imageUrl) {
+          endpoint = `https://graph.facebook.com/${pageId}/photos`;
+          body = new URLSearchParams({
+            caption: content,
+            url: imageUrl,
+            access_token: pageAccessToken,
+          });
+        }
+
+        const res = await fetch(endpoint, { method: "POST", body });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(
+            `Error publicando en Facebook: ${res.status} - ${text}`
+          );
+        }
+
+        return await res.json();
+      }
+
+      case "instagram": {
+        if (!socialAccount.token)
+          throw new Error("Token de Instagram no disponible");
+
+        const igUserId = process.env.IG_USER_ID; // o guárdalo en tu BD (con Graph API Business)
+        if (!imageUrl) throw new Error("Instagram requiere imagen");
+
+        // Paso 1: crear contenedor de medios
+        let mediaRes = await fetch(
+          `https://graph.facebook.com/v18.0/${igUserId}/media`,
+          {
+            method: "POST",
+            body: new URLSearchParams({
+              image_url: imageUrl, // Debe ser URL pública
+              caption: content,
+              access_token: socialAccount.token,
+            }),
+          }
+        );
+        const mediaData = await mediaRes.json();
+        if (!mediaData.id)
+          throw new Error("Error creando media container en Instagram");
+
+        // Paso 2: publicar
+        let publishRes = await fetch(
+          `https://graph.facebook.com/v18.0/${igUserId}/media_publish`,
+          {
+            method: "POST",
+            body: new URLSearchParams({
+              creation_id: mediaData.id,
+              access_token: socialAccount.token,
+            }),
+          }
+        );
+
+        const publishData = await publishRes.json();
+        if (!publishData.id) throw new Error("Error publicando en Instagram");
+
+        return publishData;
+      }
+      case "mastodon":
+        if (!socialAccount.token)
+          throw new Error("Token de Mastodon no disponible");
+
+        // La URL base de Mastodon puede variar, guárdala en socialAccount si tienes varios dominios
+        const mastodonBaseUrl =
+          socialAccount.instanceUrl || "https://mastodon.social";
+
+        let mediaId = null;
+        if (imageUrl) {
+          // Subir imagen primero
+          const imageResponse = await fetch(`${mastodonBaseUrl}/api/v2/media`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${socialAccount.token}`,
+            },
+            body: (() => {
+              const formData = new FormData();
+              // Aquí deberías leer el archivo local o desde URL y anexarlo
+              // Por simplicidad asumo imageUrl es path local, necesitarás fs.createReadStream
+              const fs = require("fs");
+              formData.append("file", fs.createReadStream(`.${imageUrl}`));
+              return formData;
+            })(),
+          });
+          if (!imageResponse.ok) {
+            throw new Error(
+              `Error subiendo imagen a Mastodon: ${imageResponse.statusText}`
+            );
+          }
+          const imageData = await imageResponse.json();
+          mediaId = imageData.id;
+        }
+
+        // Publicar el estado
+        const postBody = {
+          status: content,
+          media_ids: mediaId ? [mediaId] : undefined,
+        };
+
+        const postResponse = await fetch(`${mastodonBaseUrl}/api/v1/statuses`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${socialAccount.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(postBody),
+        });
+
+        if (!postResponse.ok) {
+          throw new Error(
+            `Error publicando en Mastodon: ${postResponse.statusText}`
+          );
+        }
+
+        return await postResponse.json();
 
       default:
         throw new Error(`Publicación no implementada para ${provider}`);
     }
   } catch (err) {
-    console.error(`Error publicando en ${provider} (accountId: ${accountId}):`, err);
+    console.error(
+      `Error publicando en ${provider} (accountId: ${accountId}):`,
+      err
+    );
     throw err;
   }
 };
+
 // Credenciales de conexión a Twitter dinámicas
 passport.use(
   "twitter",
@@ -260,10 +511,12 @@ passport.serializeUser((user, done) => done(null, user.id));
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await User.findByPk(id, { include: [{ model: SocialAccount, as: "socialAccounts" }] });
+    const user = await User.findByPk(id, {
+      include: [{ model: SocialAccount, as: "socialAccounts" }],
+    });
     done(null, user);
   } catch (err) {
-    console.error('❌ Error en deserializeUser:', err.message);
+    console.error("❌ Error en deserializeUser:", err.message);
     console.error(err); // muestra detalles como error de SQL, tabla/columna inexistente, etc.
     done(err);
   }
@@ -273,5 +526,6 @@ module.exports = {
   passport,
   configureLocalStrategy,
   createTwitterStrategy,
+  createFacebookStrategy,
   publishToSocial,
 };
