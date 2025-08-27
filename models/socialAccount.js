@@ -15,7 +15,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     token: DataTypes.STRING,
     refreshToken: DataTypes.STRING,
-    displayName: DataTypes.STRING
+    displayName: DataTypes.STRING,
+    clientId: DataTypes.STRING,      // <- aquí guardaremos pageId
+    clientSecret: DataTypes.STRING
   }, {
     tableName: 'SocialAccounts',
     timestamps: true

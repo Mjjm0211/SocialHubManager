@@ -18,18 +18,31 @@ const upload = multer({ storage });
 
 // Formulario para crear publicación
 router.get("/new", ensureAuthenticated, async (req, res) => {
-  const accounts = await SocialAccount.findAll({ where: { userId: req.user.id } });
+  const accounts = await SocialAccount.findAll({
+    where: { userId: req.user.id },
+  });
   res.render("posts/new", { accounts });
 });
 
 // Guardar publicación
 router.post("/", ensureAuthenticated, upload.single("image"), async (req, res) => {
   try {
-    const { content, scheduledAt, accounts } = req.body;
+    let { content, scheduledAt, accounts } = req.body;
     const now = new Date();
     const status = !scheduledAt || new Date(scheduledAt) <= now ? "published" : "pending";
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
+    // Asegurarse que accounts sea un array
+    if (!Array.isArray(accounts)) {
+      accounts = accounts ? [accounts] : [];
+    }
+
+    const status =
+      !scheduledAt || new Date(scheduledAt) <= now ? "published" : "pending";
+
+    console.log("Contenido de la publicación:", req.body);
+
+    // Crear el post
     const post = await Post.create({
       userId: req.user.id,
       content,
@@ -38,10 +51,15 @@ router.post("/", ensureAuthenticated, upload.single("image"), async (req, res) =
       status,
     });
 
-    // Asociar cuentas sociales
-    if (accounts && accounts.length > 0) {
-      for (let accId of accounts) {
-        await PostAccount.create({ postId: post.id, accountId: accId });
+    // Obtener todas las cuentas sociales del usuario si no vienen explícitas
+    const userAccounts =
+      accounts.length > 0
+        ? await SocialAccount.findAll({
+            where: { id: accounts }, // cuentas seleccionadas
+          })
+        : await SocialAccount.findAll({
+            where: { userId: req.user.id }, // todas las cuentas del usuario
+          });
 
         // Publicar inmediatamente si el post es "published"
         if (status === "published") {
