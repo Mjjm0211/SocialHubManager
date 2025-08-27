@@ -16,9 +16,15 @@ module.exports = (sequelize, DataTypes) => {
     token: DataTypes.STRING,
     refreshToken: DataTypes.STRING,
     displayName: DataTypes.STRING,
-    clientId: DataTypes.STRING,      // <- aquí guardaremos pageId
+    clientId: DataTypes.STRING,      
     clientSecret: DataTypes.STRING
   }, {
+    indexes: [
+        {
+          unique: true,
+          fields: ["provider", "providerId"], 
+        },
+      ],
     tableName: 'SocialAccounts',
     timestamps: true
   });
