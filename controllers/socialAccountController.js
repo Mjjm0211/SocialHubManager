@@ -2,25 +2,25 @@ const UserSocialConfig = require('../models/UserSocialConfig');
 const SocialAccount = require('../models/socialAccount');
 const { ensureAuthenticated } = require('../middleware/auth');
 
-// Mostrar configuración de APIs del usuario
+// Muestra la configuracion del usuario 
 const showApiConfig = async (req, res) => {
   try {
     const userId = req.user.id;
     
-    // Obtener configuraciones existentes
+    // Obtiene configuraciones existentes
     const configs = await UserSocialConfig.findAll({
       where: { userId, isActive: true }
     });
     
-    // Crear mapa de configuraciones por proveedor
+    // Crea mapa de configuraciones por proveedor 
     const configMap = {};
     configs.forEach(config => {
       configMap[config.provider] = {
         ...config.toJSON(),
-        clientSecret: config.clientSecret ? '••••••••' : null // Ocultar secreto
+        clientSecret: config.clientSecret ? '••••••••' : null // Oculta el client secreto por seguridad
       };
     });
-    
+    //devuelve vista con los datos
     res.render('social-config', { 
       user: req.user,
       configs: configMap,
@@ -33,7 +33,7 @@ const showApiConfig = async (req, res) => {
   }
 };
 
-// Guardar/actualizar configuración de API
+// Guarda y  actualiza configuración de API
 const saveApiConfig = async (req, res) => {
   try {
     const { provider, clientId, clientSecret, apiKey, bearerToken, usesCentralApp } = req.body;
@@ -66,7 +66,7 @@ const saveApiConfig = async (req, res) => {
       });
     }
     
-    // Validar credenciales propias según el proveedor
+    // Valida credenciales propias según el proveedor
     const validationResult = validateProviderCredentials(provider, {
       clientId, clientSecret, apiKey, bearerToken
     });
@@ -78,13 +78,13 @@ const saveApiConfig = async (req, res) => {
       });
     }
     
-    // Crear o actualizar configuración
+    // Crea o actualiza configuración
     let config = await UserSocialConfig.findOne({
       where: { userId, provider }
     });
     
     if (config) {
-      // Actualizar existente
+      // Actualiza existente
       config.clientId = clientId;
       config.setClientSecret(clientSecret);
       config.apiKey = apiKey;
@@ -94,7 +94,7 @@ const saveApiConfig = async (req, res) => {
       config.isActive = true;
       await config.save();
     } else {
-      // Crear nueva
+      
       config = await UserSocialConfig.create({
         userId,
         provider,
@@ -108,7 +108,7 @@ const saveApiConfig = async (req, res) => {
       await config.save();
     }
     
-    // Verificar credenciales automáticamente
+    // Verifica credenciales automáticamente
     const verificationResult = await config.verifyCredentials();
     
     if (verificationResult.isValid) {
@@ -127,7 +127,7 @@ const saveApiConfig = async (req, res) => {
     }
     
   } catch (error) {
-    console.error('Error saving social config:', error);
+    console.error('Error guardando configuracion social:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Error interno del servidor' 
@@ -135,7 +135,7 @@ const saveApiConfig = async (req, res) => {
   }
 };
 
-// Verificar credenciales manualmente
+// Verifica credenciales manualmente
 const verifyCredentials = async (req, res) => {
   try {
     const { provider } = req.params;
@@ -173,7 +173,7 @@ const verifyCredentials = async (req, res) => {
   }
 };
 
-// Eliminar configuración
+// Elimina configuración
 const deleteConfig = async (req, res) => {
   try {
     const { provider } = req.params;
@@ -232,6 +232,7 @@ const getProviderInstructions = async (req, res) => {
 };
 
 // Funciones auxiliares
+//contiene las intrucciones por cada red social 
 function validateProviderCredentials(provider, credentials) {
   const { clientId, clientSecret, apiKey, bearerToken } = credentials;
   

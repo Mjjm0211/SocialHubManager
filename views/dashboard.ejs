@@ -9,7 +9,7 @@
   </head>
   <body class="h-full bg-gray-900">
     <div class="min-h-full">
-      <!-- Navbar -->
+      
       <nav class="bg-gray-800/50">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div class="flex h-16 items-center justify-between">
@@ -28,7 +28,7 @@
               </div>
             </div>
 
-            <!-- Avatar dropdown (del dashboard anterior) -->
+            
             <div class="flex items-center space-x-3">
               <span class="text-gray-300 text-sm">Hola, <%= user.name %></span>
               <div class="relative">
@@ -42,7 +42,7 @@
                     class="h-8 w-8 rounded-full"
                   />
                 </button>
-                <!-- Dropdown menu -->
+                
                 <div
                   id="dropdownMenu"
                   class="hidden absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50"
@@ -70,7 +70,7 @@
         </div>
       </nav>
 
-      <!-- Header -->
+      
       <header class="bg-gray-800">
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <h1 class="text-3xl font-bold tracking-tight text-white">
@@ -82,10 +82,10 @@
         </div>
       </header>
 
-      <!-- Main content -->
+      
       <main>
         <div class="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
-          <!-- Sección de información del usuario y seguridad -->
+          
           <div class="mb-6">
             <div class="bg-gray-800 rounded-lg p-6">
               <h2 class="text-xl font-semibold text-white mb-2">
@@ -118,7 +118,7 @@
             </div>
           </div>
 
-          <!-- Providers Grid -->
+          
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <% providers.forEach(provider=> { %>
             <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
@@ -182,7 +182,7 @@
             </div>
             <% }) %>
           </div>
-          <!-- Crear Post - Condiciones -->
+          
           <div class="mt-10">
             <% const hasVerifiedProvider = Object.values(configs).some(cfg =>
             cfg.isVerified); const hasTwoFA = user && user.twoFactorEnabled; %>
@@ -202,7 +202,7 @@
               </a>
             </div>
             <% } else { %>
-            <!-- Mensaje de requisitos -->
+            
             <div
               class="bg-gray-800 rounded-lg p-6 border border-gray-700 text-center"
             >
@@ -234,7 +234,7 @@
       </main>
     </div>
 
-    <!-- Instructions Modal -->
+    
     <div
       id="instructionsModal"
       class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50"
@@ -255,7 +255,7 @@
           </button>
         </div>
         <div id="instructionsContent" class="text-gray-300">
-          <!-- Content will be loaded dynamically -->
+         
         </div>
       </div>
     </div>
@@ -271,7 +271,7 @@
           dropdownMenu.classList.toggle("hidden");
         });
 
-        // Cerrar el dropdown al hacer clic fuera
+        // Cierra el dropdown al hacer clic fuera
         window.addEventListener("click", (e) => {
           if (
             !avatarBtn.contains(e.target) &&

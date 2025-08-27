@@ -15,7 +15,7 @@ router.get("/new", ensureAuthenticated, async (req, res) => {
   res.render("posts/new", { accounts });
 });
 
-// Guardar publicación
+// Guarda la publicación
 router.post("/", ensureAuthenticated, upload.none(), async (req, res) => {
   try {
     console.log("Body recibido:", req.body);
@@ -23,7 +23,7 @@ router.post("/", ensureAuthenticated, upload.none(), async (req, res) => {
     const { content, scheduledAt } = req.body;
     let { accounts } = req.body;
     console.log("Cuentas seleccionadas:", accounts);
-    // Si se seleccionó solo una cuenta, `accounts` puede venir como string, no como array
+    
     if (typeof accounts === "string") {
       accounts = [accounts];
     }
@@ -39,7 +39,7 @@ router.post("/", ensureAuthenticated, upload.none(), async (req, res) => {
       status,
     });
 
-    // Asociar cuentas sociales
+    // Asocia las cuentas 
     if (accounts && accounts.length > 0) {
       for (let accId of accounts) {
         await PostAccount.create({ postId: post.id, accountId: accId });

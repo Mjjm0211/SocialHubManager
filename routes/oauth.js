@@ -1,4 +1,4 @@
-// routes/oauth.js
+
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
@@ -18,7 +18,7 @@ const ensureUserToken = async (req, res, next) => {
   next();
 };
 
-// ===== RUTAS TWITTER =====
+// rutas de twitter
 router.get("/twitter", ensureAuthenticated, (req, res, next) => {
   passport.authenticate("twitter")(req, res, next);
 });
@@ -57,7 +57,7 @@ router.get("/twitter/callback", ensureAuthenticated, (req, res, next) => {
   })(req, res, next);
 });
 
-// en routes/oauth.js
+// rutas de mastodon 
 router.get("/mastodon", ensureAuthenticated, passport.authenticate("mastodon"));
 
 router.get("/mastodon/callback", ensureAuthenticated, (req, res, next) => {

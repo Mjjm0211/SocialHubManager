@@ -34,7 +34,7 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    // Verificar si el usuario ya existe
+    // Verifica si el usuario ya existe
     const existingUser = await User.findOne({ where: { email: email.toLowerCase() } });
     if (existingUser) {
       errors.push({ msg: 'El correo ya está registrado' });
@@ -45,7 +45,7 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Crear usuario en PostgreSQL
+    // Creacion de usuario en base de datos
     await User.create({ 
       name, 
       email: email.toLowerCase(), 
@@ -112,21 +112,21 @@ router.post('/logout', (req, res) => {
       console.error('Error al cerrar sesión:', err);
       return res.redirect('/dashboard'); // Si hay error, vuelve al dashboard
     }
-    res.clearCookie('connect.sid'); // Limpiar la cookie de sesión
+    res.clearCookie('connect.sid'); // Limpia la cookie de sesión
     res.redirect('/login'); // Redirige al login
   });
 });
 
-// Dashboard - ACTUALIZADO para incluir cuentas sociales
+// Dashboard 
 router.get('/dashboard', ensureAuthenticated, async (req, res) => {
   try {
-    // Obtener el usuario con sus cuentas sociales activas
+    // Obtiene el usuario con sus cuentas sociales activas
     const user = await User.findByPk(req.user.id, {
       include: [{
         model: SocialAccount,
         as: 'socialAccounts',
         where: { isActive: true },
-        required: false, // LEFT JOIN para que aparezca el usuario aunque no tenga cuentas
+        required: false, 
         order: [['createdAt', 'DESC']]
       }]
     });
@@ -136,12 +136,12 @@ router.get('/dashboard', ensureAuthenticated, async (req, res) => {
       return res.redirect('/login');
     }
 
-    // Si no hay cuentas sociales, inicializar como array vacío
+    // Si no hay cuentas sociales, inicia como array vacío
     if (!user.socialAccounts) {
       user.socialAccounts = [];
     }
 
-    // Agregar información adicional para la vista
+    // Agrega la información adicional para la vista
     const socialAccountsWithInfo = user.socialAccounts.map(account => {
       const accountData = account.toJSON();
       
@@ -154,14 +154,14 @@ router.get('/dashboard', ensureAuthenticated, async (req, res) => {
         }
       }
 
-      // Agregar información de estado
+      // Agrega información de estado
       accountData.isExpired = account.isTokenExpired();
       accountData.canPost = account.canPost();
       
       return accountData;
     });
 
-    // Preparar datos para la vista
+    // Prepara los datos para la vista
     const dashboardData = {
       user: {
         ...user.toJSON(),
@@ -183,7 +183,7 @@ router.post('/social/disconnect/:provider', ensureAuthenticated, async (req, res
     const { provider } = req.params;
     const userId = req.user.id;
 
-    // Validar provider
+    // Valida provider
     const validProviders = ['twitter', 'facebook', 'instagram', 'linkedin', 'google'];
     if (!validProviders.includes(provider)) {
       return res.status(400).json({ 
@@ -192,7 +192,7 @@ router.post('/social/disconnect/:provider', ensureAuthenticated, async (req, res
       });
     }
 
-    // Buscar y desactivar la cuenta social
+    // Busca y desactiva la cuenta 
     const socialAccount = await SocialAccount.findOne({
       where: { userId, provider, isActive: true }
     });
@@ -204,7 +204,7 @@ router.post('/social/disconnect/:provider', ensureAuthenticated, async (req, res
       });
     }
 
-    // Desactivar en lugar de eliminar (para mantener historial)
+    // Desactiva en lugar de eliminar (para mantener historial)
     await socialAccount.update({ 
       isActive: false,
       token: null, // Limpiar tokens por seguridad

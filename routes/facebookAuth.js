@@ -1,4 +1,4 @@
-// routes/facebookAuth.js
+
 const express = require("express");
 const passport = require("passport");
 const { ensureAuthenticated } = require("../middleware/auth");
@@ -6,7 +6,7 @@ const { SocialAccount } = require("../models");
 
 const router = express.Router();
 
-// Iniciar login con Facebook
+// Inicia login con Facebook
 router.get("/", ensureAuthenticated, (req, res, next) => {
   passport.authenticate("facebook", {
     scope: [

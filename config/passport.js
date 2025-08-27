@@ -1,5 +1,7 @@
+//configuracion centarl para autenticacion y publicacion con diferentes redes sociales
 require("dotenv").config();
 const passport = require("passport");
+//estrategias para diferentes redes sociales
 const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const LinkedInStrategy = require("passport-linkedin-oauth2").Strategy;
@@ -14,10 +16,10 @@ let fetch;
   fetch = (await import("node-fetch")).default;
 })();
 
-// Importar modelos desde index.js
+// Importa modelos desde index.js
 const { User, SocialAccount } = require("../models");
 
-// Estrategia Local
+// Estrategia Local 
 const configureLocalStrategy = () => {
   passport.use(
     "local",
@@ -89,8 +91,8 @@ passport.use(
     }
   )
 );
-//estrategia mastodon
 
+//estrategia mastodon
 passport.use(
   "mastodon",
   new OAuth2Strategy(
@@ -185,7 +187,7 @@ function createFacebookStrategy() {
         try {
           const userId = req.user.id;
 
-          // Obtener páginas administradas
+          // Obtiene páginas administradas
           let pageId = null;
           let pageAccessToken = null;
           try {
@@ -201,12 +203,12 @@ function createFacebookStrategy() {
             console.warn("No se pudo obtener página de Facebook:", err);
           }
 
-          // Buscar la SocialAccount
+          // Busca la SocialAccount 
           let account = await SocialAccount.findOne({
             where: { provider: "facebook", providerId: profile.id },
           });
           if (!account) {
-            // Crear nueva
+            // Crea nueva cuenta
             account = await SocialAccount.create({
               userId,
               provider: "facebook",
@@ -225,7 +227,7 @@ function createFacebookStrategy() {
               isActive: true,
             });
           } else if (account) {
-            // Actualizar existente
+        
             await account.update({
               userId,
               displayName: profile.displayName,
@@ -256,7 +258,7 @@ function createFacebookStrategy() {
   );
 }
 
-// Estrategia Twitter - Configuración dinámica
+// Estrategia Twitter 
 const createTwitterStrategy = (consumerKey, consumerSecret, callbackURL) => {
   return new TwitterStrategy(
     {
@@ -270,7 +272,7 @@ const createTwitterStrategy = (consumerKey, consumerSecret, callbackURL) => {
       try {
         const userId = req.user.id; // ID del usuario logueado
 
-        // Buscar o crear la cuenta
+        // Busca o crea la cuenta
         const [account, created] = await SocialAccount.findOrCreate({
           where: {
             provider: "twitter",
@@ -285,7 +287,7 @@ const createTwitterStrategy = (consumerKey, consumerSecret, callbackURL) => {
         });
 
         if (created) {
-          // Si ya existía, actualizarla
+          // Si ya existía, actualiza
           await account.update({
             userId: userId,
             displayName: profile.username,
@@ -325,10 +327,10 @@ const publishToSocial = async (accountId, provider, content, imageUrl) => {
       throw new Error(`No se encontró la cuenta social (ID: ${accountId})`);
     switch (provider) {
       case "twitter":
-        // Buscar la cuenta de Facebook del usuario
+        // Busca la cuenta de Facebook del usuario
         const socialAccount = await SocialAccount.findOne({
           where: {
-            id: accountId, // aquí accountId en realidad es el userId
+            id: accountId, 
             provider: "twitter",
           },
         });
@@ -350,7 +352,7 @@ const publishToSocial = async (accountId, provider, content, imageUrl) => {
 
         return await twitterClient.v2.tweet(content);
       case "facebook": {
-        // Buscar la cuenta de Facebook del usuario
+        // Busca la cuenta de Facebook del usuario
         const socialAccount = await SocialAccount.findOne({
           where: {
             id: accountId, 
@@ -406,13 +408,13 @@ const publishToSocial = async (accountId, provider, content, imageUrl) => {
         const igUserId = process.env.IG_USER_ID; 
         if (!imageUrl) throw new Error("Instagram requiere imagen");
 
-        // Paso 1: crear contenedor de medios
+      
         let mediaRes = await fetch(
           `https://graph.facebook.com/v18.0/${igUserId}/media`,
           {
             method: "POST",
             body: new URLSearchParams({
-              image_url: imageUrl, // Debe ser URL pública
+              image_url: imageUrl, 
               caption: content,
               access_token: socialAccount.token,
             }),
@@ -482,7 +484,7 @@ const publishToSocial = async (accountId, provider, content, imageUrl) => {
           mediaId = imageData.id;
         }
 
-        // Publicar el estado
+        // Publica el estado
         const postBody = {
           status: content,
           ...(mediaId && { media_ids: [mediaId] }), // Solo incluye si hay mediaId
@@ -529,7 +531,7 @@ passport.use(
   )
 );
 
-// Serialización
+// Serialización que almacena el ID del usuario en la sesión
 passport.serializeUser((user, done) => done(null, user.id));
 
 passport.deserializeUser(async (id, done) => {
@@ -540,7 +542,7 @@ passport.deserializeUser(async (id, done) => {
     done(null, user);
   } catch (err) {
     console.error("❌ Error en deserializeUser:", err.message);
-    console.error(err); // muestra detalles como error de SQL, tabla/columna inexistente, etc.
+    console.error(err); // muestra detalles específicos del error
     done(err);
   }
 });

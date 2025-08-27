@@ -35,7 +35,7 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    // Verificar si el usuario ya existe
+    // Verifica si el usuario ya existe
     const existingUser = await User.findOne({ where: { email: email.toLowerCase() } });
     if (existingUser) {
       errors.push({ msg: 'El correo ya está registrado' });
@@ -46,7 +46,7 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Crear usuario en PostgreSQL
+    // Crea usuario en la base de datos
     await User.create({ 
       name, 
       email: email.toLowerCase(), 
@@ -115,7 +115,7 @@ router.post('/logout', (req, res) => {
       console.error('Error al cerrar sesión:', err);
       return res.redirect('/dashboard'); // Si hay error, vuelve al dashboard
     }
-    res.clearCookie('connect.sid'); // Limpiar la cookie de sesión
+    res.clearCookie('connect.sid'); // Limpia la cookie de sesión
     res.redirect('/login'); // Redirige al login
   });
 });
@@ -132,7 +132,7 @@ router.get('/dashboard', ensureAuthenticated, async (req, res) => {
       ]
     });
 
-    // Definir proveedores de ejemplo
+    // Define los proveedores
     const providers = [
       { id: 'facebook', name: 'Facebook', color: 'blue', icon: 'fab fa-facebook' },
       { id: 'twitter', name: 'Twitter', color: 'sky', icon: 'fab fa-twitter' },
@@ -141,7 +141,7 @@ router.get('/dashboard', ensureAuthenticated, async (req, res) => {
       { id: 'mastodon', name: 'Mastodon', color: 'purple', icon: 'fab fa-mastodon' }
     ];
 
-    // Construir configs a partir de la base de datos
+    // Construye configs a partir de la base de datos
     const configs = {};
     user.socialAccounts.forEach(account => {
       configs[account.provider] = {

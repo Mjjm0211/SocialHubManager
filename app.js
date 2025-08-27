@@ -31,13 +31,13 @@ const sequelize = new Sequelize(
   }
 );
 
-// Probar conexión a PostgreSQL
+// Prueba conexión a la base de datos 
 sequelize.authenticate()
   .then(() => console.log('PostgreSQL conectado exitosamente'))
   .catch(err => console.error('Error al conectar a PostgreSQL:', err));
 
 
-// Sesión y flash
+// Sesión y Flash para mensajes
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secret123',
   resave: false,
@@ -45,16 +45,16 @@ app.use(session({
 }));
 app.use(flash());
 
-// Passport
+// configuracion de passport 
 configureLocalStrategy();
 createFacebookStrategy();
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Configurar rutas OAuth
+// Configuracion de  rutas OAuth
 app.use('/oauth', oauthRoutes);
 
-// Rutas sociales
+// Rutas de redes sociales
 app.use('/oauth/facebook', facebookAuthRoutes); 
 
 // Rutas adicionales para configuración social
@@ -64,10 +64,10 @@ app.post('/social/config/:provider/verify', socialAccountController.verifyCreden
 app.delete('/social/config/:provider', socialAccountController.deleteConfig);
 app.get('/social/config/:provider/instructions', socialAccountController.getProviderInstructions);
 
-//Configurar posts
+//Configuracion de posts
 app.use('/posts', postsRoutes); 
 
-// Configurar EJS
+// vistas 
 app.set('view engine', 'ejs');
 
 // Variables globales para mensajes flash
@@ -83,12 +83,12 @@ app.get('/', (req, res) => res.redirect('/login'));
 app.use('/', authRoutes);
 app.use('/auth', socialAuthRoutes);
 
-// Sincronizar modelos con la base de datos
+// Sincroniza modelos con la base de datos
 sequelize.sync()
   .then(() => console.log('Modelos sincronizados con PostgreSQL'))
   .catch(err => console.error('Error al sincronizar modelos:', err));
 
-// LiveReload (opcional)
+// Live Reload para desarrollo
 const liveReloadServer = livereload.createServer();
 liveReloadServer.watch(__dirname + "/views");
 app.use(connectLivereload());

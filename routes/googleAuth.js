@@ -1,7 +1,7 @@
-// routes/googleAuth.js
+
 const express = require('express');
 const router = express.Router();
-const { passport } = require('../config/passport'); // <-- así
+const { passport } = require('../config/passport'); 
 
 // Inicia autenticación con Google
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
