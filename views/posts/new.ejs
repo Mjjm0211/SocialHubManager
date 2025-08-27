@@ -1,71 +1,71 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Crear Publicación - SocialHub</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-  </head>
-  <body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-6">
-    <div class="w-full max-w-2xl bg-gray-800 rounded-lg shadow-lg p-8">
-      <h2 class="text-2xl font-bold mb-6 text-green-400 flex items-center gap-2">
-        <i class="fas fa-feather-alt text-green-500"></i> Crear Publicación
-      </h2>
 
-      <form action="/posts" method="POST" class="space-y-6">
-        <!-- Contenido -->
-        <div>
-          <label class="block font-semibold mb-1">Contenido del Post</label>
-          <textarea
-            name="content"
-            rows="4"
-            class="w-full bg-gray-700 text-white rounded-md p-3 border border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none"
-            placeholder="¿Qué quieres compartir hoy?"
-          ></textarea>
-        </div>
+<head>
+  <meta charset="UTF-8" />
+  <title>Crear Publicación</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+</head>
 
-        <!-- Seleccionar redes -->
-        <div>
-          <label class="block font-semibold mb-2">Selecciona redes sociales</label>
-          <div class="space-y-2">
-            <% accounts.forEach(acc => { %>
-              <label class="flex items-center space-x-3 bg-gray-700 p-3 rounded-md hover:bg-gray-600">
-                <input
-                  type="checkbox"
-                  name="accounts"
-                  value="<%= acc.id %>"
-                  class="h-5 w-5 text-green-500 focus:ring-green-500 rounded"
-                />
-                <span class="text-white"><%= acc.provider.charAt(0).toUpperCase() + acc.provider.slice(1) %> - <%= acc.displayName %></span>
-              </label>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-2xl bg-gray-800 rounded-lg shadow-lg p-8">
+    <h2 class="text-2xl font-bold mb-6 text-green-400 flex items-center gap-2">
+      <i class="fas fa-feather-alt text-green-500"></i> Crear Publicación
+    </h2>
+
+    <form action="/posts" method="POST" enctype="multipart/form-data" class="space-y-6">
+
+      <!-- Contenido -->
+      <div>
+        <label class="block font-semibold mb-1">Contenido del Post</label>
+        <textarea name="content" rows="4"
+          class="w-full bg-gray-700 text-white rounded-md p-3 border border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none"
+          placeholder="¿Qué quieres compartir hoy?"></textarea>
+      </div>
+
+      <div>
+        <label class="block font-semibold mb-1">Imagen (opcional)</label>
+        <input type="file" name="image" accept="image/*"
+          class="block w-full text-sm text-gray-300 file:bg-green-600 file:border-none file:rounded-md file:px-4 file:py-2 file:text-white file:cursor-pointer hover:file:bg-green-700" />
+      </div>
+
+      <!-- Seleccionar redes -->
+      <div>
+        <label class="block font-semibold mb-2">Selecciona redes sociales</label>
+        <div class="space-y-2">
+          <% accounts.forEach(acc=> { %>
+            <label class="flex items-center space-x-3 bg-gray-700 p-3 rounded-md hover:bg-gray-600">
+              <input type="checkbox" name="accounts" value="<%= acc.id %>"
+                class="h-5 w-5 text-green-500 focus:ring-green-500 rounded" />
+              <span class="text-white">
+                <%= acc.provider.charAt(0).toUpperCase() + acc.provider.slice(1) %> - <%= acc.displayName %>
+              </span>
+            </label>
             <% }) %>
-          </div>
         </div>
+      </div>
 
-        <!-- Programar -->
-        <div>
-          <label class="block font-semibold mb-1">Programar publicación</label>
-          <input
-            type="datetime-local"
-            name="scheduledAt"
-            class="bg-gray-700 text-white rounded-md p-2 border border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none w-full"
-          />
-          <p class="text-sm text-gray-400 mt-1">
-            Déjalo vacío para publicar inmediatamente.
-          </p>
-        </div>
+      <!-- Programar -->
+      <div>
+        <label class="block font-semibold mb-1">Programar publicación</label>
+        <input type="datetime-local" name="scheduledAt"
+          class="bg-gray-700 text-white rounded-md p-2 border border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none w-full" />
+        <p class="text-sm text-gray-400 mt-1">
+          Déjalo vacío para publicar inmediatamente.
+        </p>
+      </div>
 
-        <!-- Botón -->
-        <div class="text-right">
-          <button
-            type="submit"
-            class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition"
-          >
-            <i class="fas fa-paper-plane mr-2"></i> Publicar
-          </button>
-        </div>
-      </form>
-    </div>
-  </body>
+      <!-- Botón -->
+      <div class="text-right">
+        <button type="submit"
+          class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition">
+          <i class="fas fa-paper-plane mr-2"></i> Publicar
+        </button>
+      </div>
+    </form>
+  </div>
+</body>
+
 </html>
