@@ -85,7 +85,6 @@
       <!-- Main content -->
       <main>
         <div class="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
-
           <!-- Sección de información del usuario y seguridad -->
           <div class="mb-6">
             <div class="bg-gray-800 rounded-lg p-6">
@@ -141,8 +140,10 @@
                       <i
                         class="fas fa-<%= configs[provider.id].isVerified ? 'check' : 'exclamation-triangle' %> mr-1"
                       ></i>
-                      <%= configs[provider.id].isVerified ? 'Verificado' :
-                      'Pendiente' %>
+                      <% if (configs[provider.id].isVerified) { %> Verificado <%
+                      if (configs[provider.id].displayName) { %> como <%=
+                      configs[provider.id].displayName %> <% } %> <% } else { %>
+                      Pendiente <% } %>
                     </span>
                     <% } else { %>
                     <span
@@ -260,7 +261,7 @@
     </div>
 
     <script>
-      // Script para el dropdown del avatar 
+      // Script para el dropdown del avatar
       const avatarBtn = document.getElementById("avatarBtn");
       const dropdownMenu = document.getElementById("dropdownMenu");
 
