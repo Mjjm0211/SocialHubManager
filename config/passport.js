@@ -318,7 +318,7 @@ const publishToSocial = async (accountId, provider, content, imageUrl) => {
   try {
     const socialAccount = await SocialAccount.findOne({
       where: {
-        userId: accountId,
+        id: accountId,
       },
     });
     console.log("socialAccount:", socialAccount);
@@ -428,10 +428,10 @@ const publishToSocial = async (accountId, provider, content, imageUrl) => {
         return publishData;
       }
       case "mastodon": {
-        // Buscar la cuenta de Mastodon del usuario
+        
         const socialAccount = await SocialAccount.findOne({
           where: {
-            userId: accountId, // aquí accountId en realidad es el userId
+            id: accountId,
             provider: "mastodon",
           },
         });
@@ -473,8 +473,9 @@ const publishToSocial = async (accountId, provider, content, imageUrl) => {
         // Publicar el estado
         const postBody = {
           status: content,
-          media_ids: mediaId ? [mediaId] : undefined,
+          ...(mediaId && { media_ids: [mediaId] }), // Solo incluye si hay mediaId
         };
+
 
         const postResponse = await fetch(`${mastodonBaseUrl}/api/v1/statuses`, {
           method: "POST",
